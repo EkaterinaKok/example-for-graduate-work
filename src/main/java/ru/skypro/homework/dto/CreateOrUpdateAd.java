@@ -9,13 +9,15 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class CreateOrUpdateAd {
-
-    @Schema(description = "Заголовок объявления. Обязательно для заполнения.", example = "Куплю гараж", minLength = 3, maxLength = 100, requiredMode = Schema.RequiredMode.REQUIRED)
+    @Schema(description = "Заголовок объявления", example = "Продам велосипед", maxLength = 100, minLength = 3)
     private String title;
 
-    @Schema(description = "Описание товара или услуги", example = "Состояние отличное, есть документы", maxLength = 500)
-    private String description;
+    @Schema(description = "Описание объявления", example = "Велосипед в отличном состоянии...")
+    private String description; // <-- ДОБАВЬ ЭТУ СТРОКУ
 
-    @Schema(description = "Цена продажи", example = "250000", minimum = "1", requiredMode = Schema.RequiredMode.REQUIRED)
+    @Schema(description = "Цена объявления в рублях", example = "15000", minimum = "0")
     private Integer price;
+
+    @Schema(description = "Ссылка на изображение", example = "https://site.com/img/1.jpg")
+    private String image;
 }

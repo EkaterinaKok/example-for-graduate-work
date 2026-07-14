@@ -49,7 +49,7 @@ public class CommentsController {
         Comment comment = new Comment();
         comment.setPk(MOCK_ID);
         comment.setText(dto.getText());
-        comment.setAuthor(100); // Заглушка автора
+        comment.setAuthorId(adId); // Заглушка автора
         return ResponseEntity.ok(comment);
     }
 

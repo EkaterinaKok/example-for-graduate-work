@@ -1,0 +1,20 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/skypro_ads
+    username: username
+    password: password
+    driver-class-name: org.postgresql.Driver
+    liquibase:
+      enabled: false
+  jpa:
+    hibernate:
+      ddl-auto: none
+    show-sql: true
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+  liquibase:
+    change-log: classpath:db/changelog/master.yml
+
+server:
+  port: 8080
