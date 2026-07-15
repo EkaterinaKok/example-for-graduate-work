@@ -9,6 +9,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class CreateOrUpdateAd {
+
     @Schema(description = "Заголовок объявления", example = "Продам велосипед", maxLength = 100, minLength = 3)
     private String title;
 

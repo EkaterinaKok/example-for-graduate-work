@@ -1,47 +1,48 @@
 package ru.skypro.homework.service.impl;
 
+import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.provisioning.UserDetailsManager;
 import org.springframework.stereotype.Service;
 import ru.skypro.homework.dto.Register;
+import ru.skypro.homework.entity.UserEntity;
+import ru.skypro.homework.repository.UsersRepository;
 import ru.skypro.homework.service.AuthService;
 
 @Service
+@RequiredArgsConstructor
 public class AuthServiceImpl implements AuthService {
 
-    private final UserDetailsManager manager;
-    private final PasswordEncoder encoder;
-
-    public AuthServiceImpl(UserDetailsManager manager,
-                           PasswordEncoder passwordEncoder) {
-        this.manager = manager;
-        this.encoder = passwordEncoder;
-    }
+    private final UsersRepository usersRepository;
+    private final PasswordEncoder passwordEncoder;
 
     @Override
-    public boolean login(String userName, String password) {
-        if (!manager.userExists(userName)) {
-            return false;
-        }
-        UserDetails userDetails = manager.loadUserByUsername(userName);
-        return encoder.matches(password, userDetails.getPassword());
+    public boolean login(String username, String password) {
+        // В реальном проекте тут лучше использовать AuthenticationManager,
+        // но для учебного этапа проверка через репозиторий допустима.
+        return usersRepository.findByUsername(username)
+                .filter(user -> passwordEncoder.matches(password, user.getPasswordHash()))
+                .isPresent();
     }
 
     @Override
     public boolean register(Register register) {
-        if (manager.userExists(register.getUsername())) {
-            return false;
+        if (usersRepository.findByUsername(register.getUsername()).isPresent()) {
+            return false; // Пользователь уже существует
         }
-        manager.createUser(
-                User.builder()
-                        .passwordEncoder(this.encoder::encode)
-                        .password(register.getPassword())
-                        .username(register.getUsername())
-                        .roles(register.getRole().name())
-                        .build());
+
+        UserEntity user = new UserEntity();
+        user.setUsername(register.getUsername());
+        user.setFirstName(register.getFirstName());
+        user.setLastName(register.getLastName());
+        user.setPhone(register.getPhone());
+        user.setRole(register.getRole() != null ? register.getRole().name() : "USER");
+        // ВАЖНО: ХЕШИРУЕМ ПАРОЛЬ ПЕРЕД СОХРАНЕНИЕМ!
+        user.setPasswordHash(passwordEncoder.encode(register.getPassword()));
+
+        usersRepository.save(user);
         return true;
     }
-
 }

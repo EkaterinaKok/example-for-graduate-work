@@ -5,3 +5,5 @@ databaseChangeLog:
       file: db/changelog/002_create_ads.sql
   - include:
       file: db/changelog/003_create_comments.sql
+  - include:
+      file: db/changelog/004_insert_test_user.sql

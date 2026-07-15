@@ -41,16 +41,21 @@ public class CommentsController {
 
     @PostMapping
     @Operation(summary = "Добавление комментария к объявлению")
-    @ApiResponse(responseCode = "200", description = "OK")
-    @ApiResponse(responseCode = "401", description = "Unauthorized")
-    @ApiResponse(responseCode = "404", description = "Not found")
-    public ResponseEntity<Comment> addComment(@PathVariable Integer adId, @RequestBody CreateOrUpdateComment dto) {
-        log.info("Добавление комментария к объявлению ID: {}. Текст: {}", adId, dto.getText());
-        Comment comment = new Comment();
-        comment.setPk(MOCK_ID);
-        comment.setText(dto.getText());
-        comment.setAuthorId(adId); // Заглушка автора
-        return ResponseEntity.ok(comment);
+    @ApiResponse(responseCode = "201", description = "Created")
+    public ResponseEntity<Comment> addComment(
+            @PathVariable Integer adId,
+            @RequestBody String text, // <-- Берем просто строку JSON или plain text
+            @RequestAttribute("userId") Integer authorId) { // <-- Получаем ID из SecurityContext
+
+        try {
+            // ✅ ПРАВИЛЬНЫЙ ВЫЗОВ: adId, text (строка), authorId
+            Comment comment = commentsService.addComment(adId, text, authorId);
+            return ResponseEntity.status(201).body(comment);
+        } catch (RuntimeException e) {
+            // Для этапа SkyPro проще ловить RuntimeException, так как мы кидаем их в сервисе
+            log.error("Ошибка при добавлении комментария: {}", e.getMessage());
+            return ResponseEntity.badRequest().build();
+        }
     }
 
     @DeleteMapping("/{commentId}")

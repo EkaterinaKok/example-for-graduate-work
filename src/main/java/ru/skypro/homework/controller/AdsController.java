@@ -1,6 +1,7 @@
 package ru.skypro.homework.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
@@ -13,6 +14,8 @@ import ru.skypro.homework.dto.Ads;
 import ru.skypro.homework.dto.CreateOrUpdateAd;
 import ru.skypro.homework.dto.ExtendedAd;
 import ru.skypro.homework.service.AdsService;
+import ru.skypro.homework.security.AuthUtils;
+import ru.skypro.homework.service.impl.AdsServiceImpl;
 
 import java.util.Collections;
 
@@ -24,7 +27,8 @@ import java.util.Collections;
 @Tag(name = "Объявления")
 public class AdsController {
 
-    private final AdsService adsService;
+    private final AdsServiceImpl adsService;
+    private final AuthUtils authUtils;
 
     private static final Integer MOCK_ID = 1;
 
@@ -44,17 +48,16 @@ public class AdsController {
     @ApiResponse(responseCode = "201", description = "Created")
     @ApiResponse(responseCode = "401", description = "Unauthorized")
     public ResponseEntity<Ad> addAd(
-            @RequestPart("properties") CreateOrUpdateAd properties,
-            @RequestPart("image") MultipartFile image) {
+            @RequestPart("properties")
+            @Schema(description = "Данные объявления (заголовок, цена, описание)")
+            CreateOrUpdateAd properties,
 
-        log.info("Создание объявления. Заголовок: {}, Цена: {}, Файл: {}",
-                properties.getTitle(), properties.getPrice(), image.getOriginalFilename());
+            @RequestPart("image")
+            @Schema(type = "string", format = "binary", description = "Картинка объявления") // <--- ЭТО ВАЖНО
+            MultipartFile image) {
 
-        Ad ad = new Ad();
-        ad.setPk(MOCK_ID); // Заглушка ID
-        ad.setTitle(properties.getTitle());
-        ad.setPrice(properties.getPrice());
-        ad.setImage("ссылка_на_картинку");
+        Integer currentUserId = authUtils.getCurrentUserId();
+        Ad ad = adsService.addAd(properties, currentUserId, image);
         return ResponseEntity.status(201).body(ad);
     }
 

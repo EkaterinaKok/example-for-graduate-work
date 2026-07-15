@@ -4,17 +4,19 @@ spring:
     username: username
     password: password
     driver-class-name: org.postgresql.Driver
-    liquibase:
-      enabled: false
+
+  # ВАЖНО: Включаем Liquibase!
+  liquibase:
+    change-log: classpath:db/changelog/master.yml
+    # enabled: true # По умолчанию true, можно не писать явно
+
   jpa:
     hibernate:
-      ddl-auto: none
+      ddl-auto: none # Обязательно none, иначе Hibernate и Liquibase будут драться за создание таблиц
     show-sql: true
     properties:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
-  liquibase:
-    change-log: classpath:db/changelog/master.yml
 
 server:
   port: 8080
