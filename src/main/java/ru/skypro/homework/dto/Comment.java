@@ -9,6 +9,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class Comment {
+
     @Schema(description = "Уникальный идентификатор комментария", example = "10", accessMode = Schema.AccessMode.READ_ONLY)
     private Integer pk;
 
@@ -24,7 +25,5 @@ public class Comment {
     @Schema(description = "Дата создания комментария (Unix timestamp, ms)", example = "1715623456789")
     private Long createdAt;
 
-    // createdAt убираем отсюда, чтобы не было ошибок "Unknown property",
-    // если его нет в DTO, но есть в Entity.
 }
 

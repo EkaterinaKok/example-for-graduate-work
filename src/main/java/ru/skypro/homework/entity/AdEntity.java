@@ -34,12 +34,11 @@ public class AdEntity {
     @Column(name = "created_at")
     private LocalDateTime createdAt;
 
-    // Связь: объявление принадлежит одному пользователю. Lazy обязательно!
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "author_id", nullable = false)
     private UserEntity author;
 
-    // Связь: в объявлении много комментариев. Lazy обязательно!
     @OneToMany(mappedBy = "ad", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<CommentEntity> comments;
+
 }

@@ -8,7 +8,6 @@ import ru.skypro.homework.entity.UserEntity;
 @Mapper(componentModel = "spring")
 public interface UserMapper {
 
-    // Маппинг Entity -> DTO
     @Mapping(target = "id", source = "id")
     @Mapping(target = "email", source = "email")
     @Mapping(target = "firstName", source = "firstName")
@@ -18,6 +17,6 @@ public interface UserMapper {
     @Mapping(target = "image", source = "image")
     User toDto(UserEntity entity);
 
-    // Если понадобится обновление (редко для User, но полезно иметь)
     void updateFromDto(ru.skypro.homework.dto.UpdateUser dto, @org.mapstruct.MappingTarget ru.skypro.homework.entity.UserEntity entity);
+
 }

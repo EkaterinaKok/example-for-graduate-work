@@ -13,10 +13,6 @@ public class AuthUtils {
 
     private final UsersRepository usersRepository;
 
-    /**
-     * Получает ID текущего авторизованного пользователя из SecurityContext.
-     * Если пользователь не авторизован, выбрасывает исключение.
-     */
     public Integer getCurrentUserId() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 
@@ -24,10 +20,8 @@ public class AuthUtils {
             throw new IllegalStateException("Пользователь не авторизован");
         }
 
-        // Получаем username из контекста (это то, что мы положили в CustomUserDetailsService)
         String username = auth.getName();
 
-        // Ищем пользователя в БД по username, чтобы получить его Integer ID
         return usersRepository.findByUsername(username)
                 .map(UserEntity::getId)
                 .orElseThrow(() -> new IllegalStateException("Пользователь найден в контексте, но отсутствует в БД"));

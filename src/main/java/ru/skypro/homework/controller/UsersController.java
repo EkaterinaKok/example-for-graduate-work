@@ -50,7 +50,6 @@ public class UsersController {
     public ResponseEntity<UpdateUser> updateUser(@RequestBody UpdateUser dto) {
         log.info("Обновление профиля пользователя. Данные: {}", dto);
         usersService.updateUser(dto);
-        // Возвращаем обновленные данные (или тот же DTO)
         return ResponseEntity.ok(dto);
     }
 

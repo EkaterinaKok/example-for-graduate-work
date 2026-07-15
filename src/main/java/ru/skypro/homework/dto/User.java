@@ -4,7 +4,6 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import ru.skypro.homework.dto.Role;
 
 @Data
 @NoArgsConstructor
@@ -31,4 +30,5 @@ public class User {
 
     @Schema(description = "Ссылка на аватар пользователя", example = "https://cdn.example.com/avatars/101.jpg")
     private String image;
+
 }

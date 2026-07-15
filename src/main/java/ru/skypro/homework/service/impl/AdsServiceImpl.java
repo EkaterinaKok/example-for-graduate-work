@@ -50,25 +50,19 @@ public class AdsServiceImpl implements AdsService {
 
     @Override
     public Ad addAd(CreateOrUpdateAd dto, Integer authorId, MultipartFile image) {
-        // 1. Находим автора в БД
         UserEntity author = usersRepository.findById(authorId)
                 .orElseThrow(() -> new RuntimeException("Автор не найден"));
 
-        // 2. Маппим DTO в Entity
         AdEntity adEntity = adMapper.toEntity(dto);
 
-        // 3. Привязываем автора и дату
         adEntity.setAuthor(author);
         adEntity.setCreatedAt(LocalDateTime.now());
 
-        // 4. Обработка картинки (заглушка логики сохранения)
-        // ИСПРАВЛЕНИЕ 1: Убрали try-catch, так как getOriginalFilename() не кидает IOException
         if (image != null && !image.isEmpty()) {
             String path = "images/" + image.getOriginalFilename();
             adEntity.setImage(path);
         }
 
-        // 5. Сохраняем
         AdEntity saved = adsRepository.save(adEntity);
         return adMapper.toDto(saved);
     }
@@ -79,7 +73,6 @@ public class AdsServiceImpl implements AdsService {
         AdEntity ad = adsRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Объявление не найдено"));
 
-        // ПРОВЕРКА ПРАВ: Удалять может только автор или админ (упрощенно - только автор)
         if (!ad.getAuthor().getId().equals(currentUserId)) {
             throw new RuntimeException("Нельзя удалять чужие объявления");
         }
@@ -92,19 +85,13 @@ public class AdsServiceImpl implements AdsService {
         AdEntity ad = adsRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Объявление не найдено"));
 
-        // ПРОВЕРКА ПРАВ
         if (!ad.getAuthor().getId().equals(currentUserId)) {
             throw new RuntimeException("Нельзя обновлять чужие объявления");
         }
 
-        // Обновляем поля
         if (dto.getTitle() != null) ad.setTitle(dto.getTitle());
         if (dto.getPrice() != null) ad.setPrice(dto.getPrice());
         if (dto.getDescription() != null) ad.setDescription(dto.getDescription());
-
-        // ИСПРАВЛЕНИЕ 2: Закомментировали setUpdatedAt, так как метода нет в сущности.
-        // Если нужно, раскомментируй после добавления поля в AdEntity.
-        // ad.setUpdatedAt(LocalDateTime.now());
 
         AdEntity updated = adsRepository.save(ad);
         return adMapper.toDto(updated);
@@ -112,8 +99,7 @@ public class AdsServiceImpl implements AdsService {
 
     @Override
     public Ads getAdsByAuthor(Integer authorId) {
-        // Вызываем метод, который мы создали в репозитории.
-        // Он вернет список Entity.
+
         List<AdEntity> ads = adsRepository.findAllByAuthorId(authorId);
 
         List<Ad> dtoList = ads.stream()
@@ -151,7 +137,6 @@ public class AdsServiceImpl implements AdsService {
         dto.setDescription(ad.getDescription());
         dto.setImage(ad.getImage());
 
-        // Заполняем данные автора (так как в ExtendedAd они вынесены отдельно)
         UserEntity author = ad.getAuthor();
         if (author != null) {
             dto.setAuthorFirstName(author.getFirstName());

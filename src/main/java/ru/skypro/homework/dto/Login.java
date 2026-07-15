@@ -21,4 +21,5 @@ public class Login {
     @Size(min = 8, max = 16, message = "Пароль должен быть от 8 до 16 символов")
     @Schema(description = "Пароль пользователя", example = "strongPass12")
     private String password;
+
 }

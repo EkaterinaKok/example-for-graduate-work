@@ -24,13 +24,11 @@ public class SecurityConfig {
 
     private final CustomUserDetailsService customUserDetailsService;
 
-    // Нам нужен PasswordEncoder, чтобы DaoAuthenticationProvider мог сверять пароли
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
 
-    // Создаем провайдер аутентификации, который использует наш сервис и энкодер
     @Bean
     public DaoAuthenticationProvider authenticationProvider(PasswordEncoder passwordEncoder) {
         DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();

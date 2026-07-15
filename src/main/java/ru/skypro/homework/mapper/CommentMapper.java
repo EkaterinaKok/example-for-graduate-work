@@ -14,7 +14,7 @@ public interface CommentMapper {
     @Mapping(target = "text", source = "text")
     @Mapping(target = "authorId", source = "author.id")
     @Mapping(target = "adId", source = "ad.pk")
-    @Mapping(target = "createdAt", source = "createdAt") // <--- ИСПРАВЛЕНИЕ: Добавляем маппинг времени
+    @Mapping(target = "createdAt", source = "createdAt")
     Comment toDto(CommentEntity entity);
 
     @Mapping(target = "pk", ignore = true)
@@ -28,4 +28,5 @@ public interface CommentMapper {
     @Mapping(target = "author", ignore = true)
     @Mapping(target = "ad", ignore = true)
     void updateFromDto(CreateOrUpdateComment dto, @MappingTarget CommentEntity entity);
+
 }

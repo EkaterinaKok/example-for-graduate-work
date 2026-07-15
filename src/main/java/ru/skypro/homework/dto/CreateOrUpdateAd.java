@@ -21,4 +21,5 @@ public class CreateOrUpdateAd {
 
     @Schema(description = "Ссылка на изображение", example = "https://site.com/img/1.jpg")
     private String image;
+
 }

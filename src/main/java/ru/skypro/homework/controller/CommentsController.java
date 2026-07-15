@@ -13,8 +13,6 @@ import ru.skypro.homework.dto.CreateOrUpdateComment;
 import ru.skypro.homework.security.AuthUtils;
 import ru.skypro.homework.service.CommentsService;
 
-import java.util.Collections;
-
 @Slf4j
 @CrossOrigin(value = "http://localhost:3000")
 @RestController
@@ -42,9 +40,8 @@ public class CommentsController {
     @ApiResponse(responseCode = "201", description = "Created")
     public ResponseEntity<Comment> addComment(
             @PathVariable Integer adId,
-            @RequestBody CreateOrUpdateComment dto) { // Используем DTO вместо String text
+            @RequestBody CreateOrUpdateComment dto) {
 
-        // ✅ БЕРЕМ АВТОРА ИЗ КОНТЕКСТА БЕЗОПАСНОСТИ
         Integer authorId = authUtils.getCurrentUserId();
 
         Comment comment = commentsService.addComment(adId, dto.getText(), authorId);
@@ -58,11 +55,11 @@ public class CommentsController {
     @ApiResponse(responseCode = "403", description = "Forbidden")
     @ApiResponse(responseCode = "404", description = "Not found")
     public ResponseEntity<?> deleteComment(
-            @PathVariable Integer adId, // adId нужен для проверки прав (опционально)
+            @PathVariable Integer adId,
             @PathVariable Integer commentId) {
 
         Integer currentUserId = authUtils.getCurrentUserId();
-        commentsService.deleteComment(commentId, currentUserId); // Передаем ID текущего юзера для проверки прав
+        commentsService.deleteComment(commentId, currentUserId);
         return ResponseEntity.noContent().build();
     }
 

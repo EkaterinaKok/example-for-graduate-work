@@ -29,7 +29,6 @@ public class CommentsServiceImpl implements CommentsService {
 
     @Override
     public Comments getCommentsByAd(Integer adPk) {
-        // 1. Проверяем существование объявления. Если нет - ошибка 404
         adsRepository.findById(adPk)
                 .orElseThrow(() -> new RuntimeException("Объявление с ID " + adPk + " не найдено"));
 
@@ -58,7 +57,6 @@ public class CommentsServiceImpl implements CommentsService {
         commentEntity.setAd(ad);
         commentEntity.setAuthor(author);
 
-        // Время создания в миллисекундах (как в твоем ТЗ)
         commentEntity.setCreatedAt(System.currentTimeMillis());
 
         CommentEntity saved = commentsRepository.save(commentEntity);
@@ -70,7 +68,6 @@ public class CommentsServiceImpl implements CommentsService {
         CommentEntity comment = commentsRepository.findById(commentId)
                 .orElseThrow(() -> new RuntimeException("Комментарий не найден"));
 
-        // 🔥 КРИТИЧЕСКАЯ ПРОВЕРКА: Удалять может только автор комментария
         if (!comment.getAuthor().getId().equals(currentUserId)) {
             throw new RuntimeException("Доступ запрещен: нельзя удалять чужие комментарии");
         }
@@ -83,15 +80,13 @@ public class CommentsServiceImpl implements CommentsService {
         CommentEntity comment = commentsRepository.findById(commentId)
                 .orElseThrow(() -> new RuntimeException("Комментарий не найден"));
 
-        // 🔥 ПРОВЕРКА ПРАВ: Редактировать может только автор
         if (!comment.getAuthor().getId().equals(currentUserId)) {
             throw new RuntimeException("Доступ запрещен: нельзя редактировать чужие комментарии");
         }
 
         comment.setText(newText);
-        // Если в CommentEntity есть поле updatedAt, раскомментируй:
-        // comment.setUpdatedAt(System.currentTimeMillis());
 
         return commentMapper.toDto(commentsRepository.save(comment));
     }
+
 }

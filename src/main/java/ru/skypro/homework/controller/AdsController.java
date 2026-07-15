@@ -24,7 +24,7 @@ import ru.skypro.homework.security.AuthUtils;
 @Tag(name = "Объявления")
 public class AdsController {
 
-    private final AdsService adsService; // <-- Внедряем интерфейс
+    private final AdsService adsService;
     private final AuthUtils authUtils;
 
     @GetMapping
@@ -56,7 +56,6 @@ public class AdsController {
     public ResponseEntity<ExtendedAd> getAd(@PathVariable Integer id) {
         log.info("Запрос объявления с ID: {}", id);
 
-        // ✅ ТЕПЕРЬ ВЫЗЫВАЕМ МЕТОД ЧЕРЕЗ ИНТЕРФЕЙС. Приведение типов УДАЛЕНО.
         ExtendedAd ad = adsService.getExtendedAdById(id);
 
         return ResponseEntity.ok(ad);

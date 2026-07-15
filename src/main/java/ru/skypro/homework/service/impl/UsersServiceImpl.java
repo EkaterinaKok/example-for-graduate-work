@@ -47,8 +47,6 @@ public class UsersServiceImpl implements UsersService {
         }
 
         user.setPasswordHash(passwordEncoder.encode(dto.getNewPassword()));
-        // save() вызывается автоматически в конце транзакции благодаря @Transactional,
-        // но явный вызов тоже допустим.
         usersRepository.save(user);
     }
 
@@ -69,7 +67,6 @@ public class UsersServiceImpl implements UsersService {
         UserEntity user = usersRepository.findById(currentUserId)
                 .orElseThrow(() -> new ResponseStatusException(NOT_FOUND, "Пользователь не найден"));
 
-        // Частичное обновление (только если поле не null)
         if (dto.getFirstName() != null) {
             user.setFirstName(dto.getFirstName());
         }
@@ -80,7 +77,6 @@ public class UsersServiceImpl implements UsersService {
             user.setPhone(dto.getPhone());
         }
 
-        // usersRepository.save(user) сработает автоматически в конце метода из-за @Transactional
     }
 
     @Override
@@ -101,23 +97,14 @@ public class UsersServiceImpl implements UsersService {
                 Files.createDirectories(uploadDir);
             }
 
-            // 2. Генерируем УНИКАЛЬНОЕ имя файла (UUID надежнее времени)
             String fileName = UUID.randomUUID() + "_" + image.getOriginalFilename();
             Path filePath = uploadDir.resolve(fileName);
-
-            // 3. ФИЗИЧЕСКИ копируем файл на диск
             image.transferTo(filePath);
-
-            // 4. Сохраняем ПУТЬ в базу данных.
-            // ВАЖНО: Путь должен совпадать с тем, что настроен в spring.web.resources.static-locations
-            // Если ты используешь file:${user.dir}/uploads, то путь должен быть "/images/..."
             user.setImage("/images/" + fileName);
 
-            // usersRepository.save(user) сработает автоматически
-
         } catch (IOException e) {
-            // Логируем ошибку перед выбрасыванием, чтобы видеть стек в консоли
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Ошибка сохранения файла аватара", e);
         }
     }
+
 }

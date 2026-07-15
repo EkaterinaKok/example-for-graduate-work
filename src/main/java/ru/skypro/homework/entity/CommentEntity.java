@@ -22,13 +22,12 @@ public class CommentEntity {
     @Column(name = "created_at", nullable = false)
     private Long createdAt; // Храним timestamp в мс (Long)
 
-    // Связь: комментарий принадлежит одному пользователю. Lazy обязательно!
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "author_id", nullable = false)
     private UserEntity author;
 
-    // Связь: комментарий относится к одному объявлению. Lazy обязательно!
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "ad_id", nullable = false)
     private AdEntity ad;
+
 }

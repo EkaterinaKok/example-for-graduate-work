@@ -28,7 +28,6 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(ResponseStatusException.class)
     public ResponseEntity<ErrorResponse> handleResponseStatusException(ResponseStatusException ex) {
-        // ✅ Приводим HttpStatusCode к HttpStatus
         HttpStatus status = (HttpStatus) ex.getStatusCode();
 
         return new ResponseEntity<>(
@@ -62,7 +61,6 @@ public class GlobalExceptionHandler {
         return ResponseEntity.badRequest().body(errors);
     }
 
-    // Общий хендлер оставляем на случай непредвиденных ошибок, но возвращаем 500
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> handleGenericException(Exception ex) {
         return new ResponseEntity<>(
@@ -70,4 +68,5 @@ public class GlobalExceptionHandler {
                 HttpStatus.INTERNAL_SERVER_ERROR
         );
     }
+
 }

@@ -37,7 +37,6 @@ public class ExtendedAd {
     private String email;
 
     @Schema(description = "Ссылка на главное фото товара", example = "https://cdn.skypro.ru/ads/505/main.jpg")
-    // Для ссылок нет стандартной простой аннотации, можно оставить просто Schema
     private String image;
 
     @Schema(description = "Телефон продавца", example = "+79991234567")
@@ -50,4 +49,5 @@ public class ExtendedAd {
     @Schema(description = "Заголовок объявления", example = "Велосипед Trek, новый, рама M")
     @Size(min = 3, max = 100, message = "Заголовок должен быть от 3 до 100 символов")
     private String title;
+
 }
