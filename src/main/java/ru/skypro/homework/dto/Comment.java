@@ -21,6 +21,9 @@ public class Comment {
     @Schema(description = "ID объявления, к которому относится комментарий", example = "20")
     private Integer adId;
 
+    @Schema(description = "Дата создания комментария (Unix timestamp, ms)", example = "1715623456789")
+    private Long createdAt;
+
     // createdAt убираем отсюда, чтобы не было ошибок "Unknown property",
     // если его нет в DTO, но есть в Entity.
 }

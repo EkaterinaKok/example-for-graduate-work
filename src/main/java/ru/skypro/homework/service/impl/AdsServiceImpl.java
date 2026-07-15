@@ -7,6 +7,7 @@ import org.springframework.web.multipart.MultipartFile;
 import ru.skypro.homework.dto.Ad;
 import ru.skypro.homework.dto.Ads;
 import ru.skypro.homework.dto.CreateOrUpdateAd;
+import ru.skypro.homework.dto.ExtendedAd;
 import ru.skypro.homework.entity.AdEntity;
 import ru.skypro.homework.entity.UserEntity;
 import ru.skypro.homework.mapper.AdMapper;
@@ -137,4 +138,29 @@ public class AdsServiceImpl implements AdsService {
         }
         return adMapper.toDto(ad);
     }
+
+    @Override
+    public ExtendedAd getExtendedAdById(Integer id) {
+        AdEntity ad = adsRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Объявление не найдено"));
+
+        ExtendedAd dto = new ExtendedAd();
+        dto.setPk(ad.getPk());
+        dto.setTitle(ad.getTitle());
+        dto.setPrice(ad.getPrice());
+        dto.setDescription(ad.getDescription());
+        dto.setImage(ad.getImage());
+
+        // Заполняем данные автора (так как в ExtendedAd они вынесены отдельно)
+        UserEntity author = ad.getAuthor();
+        if (author != null) {
+            dto.setAuthorFirstName(author.getFirstName());
+            dto.setAuthorLastName(author.getLastName());
+            dto.setEmail(author.getEmail());
+            dto.setPhone(author.getPhone());
+        }
+
+        return dto;
+    }
+
 }

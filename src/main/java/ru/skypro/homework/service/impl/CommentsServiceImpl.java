@@ -29,9 +29,9 @@ public class CommentsServiceImpl implements CommentsService {
 
     @Override
     public Comments getCommentsByAd(Integer adPk) {
-        // Проверяем, существует ли вообще такое объявление (хорошая практика)
+        // 1. Проверяем существование объявления. Если нет - ошибка 404
         adsRepository.findById(adPk)
-                .orElseThrow(() -> new RuntimeException("Объявление не найдено"));
+                .orElseThrow(() -> new RuntimeException("Объявление с ID " + adPk + " не найдено"));
 
         List<CommentEntity> comments = commentsRepository.findAllByAdPk(adPk);
 
@@ -51,14 +51,14 @@ public class CommentsServiceImpl implements CommentsService {
                 .orElseThrow(() -> new RuntimeException("Объявление не найдено"));
 
         UserEntity author = usersRepository.findById(authorId)
-                .orElseThrow(() -> new RuntimeException("Автор не найден"));
+                .orElseThrow(() -> new RuntimeException("Пользователь-автор не найден"));
 
         CommentEntity commentEntity = new CommentEntity();
         commentEntity.setText(text);
         commentEntity.setAd(ad);
         commentEntity.setAuthor(author);
 
-        // 🔥 КРИТИЧЕСКИ ВАЖНО: Ставим время в миллисекундах!
+        // Время создания в миллисекундах (как в твоем ТЗ)
         commentEntity.setCreatedAt(System.currentTimeMillis());
 
         CommentEntity saved = commentsRepository.save(commentEntity);
@@ -66,10 +66,14 @@ public class CommentsServiceImpl implements CommentsService {
     }
 
     @Override
-    @Transactional // Явно указываем транзакцию для удаления
-    public void deleteComment(Integer commentId) {
+    public void deleteComment(Integer commentId, Integer currentUserId) {
         CommentEntity comment = commentsRepository.findById(commentId)
                 .orElseThrow(() -> new RuntimeException("Комментарий не найден"));
+
+        // 🔥 КРИТИЧЕСКАЯ ПРОВЕРКА: Удалять может только автор комментария
+        if (!comment.getAuthor().getId().equals(currentUserId)) {
+            throw new RuntimeException("Доступ запрещен: нельзя удалять чужие комментарии");
+        }
 
         commentsRepository.delete(comment);
     }
@@ -79,13 +83,13 @@ public class CommentsServiceImpl implements CommentsService {
         CommentEntity comment = commentsRepository.findById(commentId)
                 .orElseThrow(() -> new RuntimeException("Комментарий не найден"));
 
-        // ПРОВЕРКА ПРАВ: Редактировать может только автор комментария
+        // 🔥 ПРОВЕРКА ПРАВ: Редактировать может только автор
         if (!comment.getAuthor().getId().equals(currentUserId)) {
-            throw new RuntimeException("Нельзя редактировать чужой комментарий");
+            throw new RuntimeException("Доступ запрещен: нельзя редактировать чужие комментарии");
         }
 
         comment.setText(newText);
-        // Если в CommentEntity есть поле updatedAt, раскомментируй строку ниже:
+        // Если в CommentEntity есть поле updatedAt, раскомментируй:
         // comment.setUpdatedAt(System.currentTimeMillis());
 
         return commentMapper.toDto(commentsRepository.save(comment));

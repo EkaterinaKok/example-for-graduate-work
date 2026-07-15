@@ -1,7 +1,7 @@
 package ru.skypro.homework.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.media.Schema;
+
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
@@ -15,9 +15,6 @@ import ru.skypro.homework.dto.CreateOrUpdateAd;
 import ru.skypro.homework.dto.ExtendedAd;
 import ru.skypro.homework.service.AdsService;
 import ru.skypro.homework.security.AuthUtils;
-import ru.skypro.homework.service.impl.AdsServiceImpl;
-
-import java.util.Collections;
 
 @Slf4j
 @CrossOrigin(value = "http://localhost:3000")
@@ -27,20 +24,15 @@ import java.util.Collections;
 @Tag(name = "Объявления")
 public class AdsController {
 
-    private final AdsServiceImpl adsService;
+    private final AdsService adsService; // <-- Внедряем интерфейс
     private final AuthUtils authUtils;
-
-    private static final Integer MOCK_ID = 1;
 
     @GetMapping
     @Operation(summary = "Получение всех объявлений")
     @ApiResponse(responseCode = "200", description = "OK")
     public ResponseEntity<Ads> getAllAds() {
-        log.info("Получение списка всех объявлений");
-        Ads ads = new Ads();
-        ads.setCount(0);
-        ads.setResults(Collections.emptyList());
-        return ResponseEntity.ok(ads);
+        log.info("Запрос на получение всех объявлений");
+        return ResponseEntity.ok(adsService.getAllAds());
     }
 
     @PostMapping(consumes = {"multipart/form-data"})
@@ -48,13 +40,8 @@ public class AdsController {
     @ApiResponse(responseCode = "201", description = "Created")
     @ApiResponse(responseCode = "401", description = "Unauthorized")
     public ResponseEntity<Ad> addAd(
-            @RequestPart("properties")
-            @Schema(description = "Данные объявления (заголовок, цена, описание)")
-            CreateOrUpdateAd properties,
-
-            @RequestPart("image")
-            @Schema(type = "string", format = "binary", description = "Картинка объявления") // <--- ЭТО ВАЖНО
-            MultipartFile image) {
+            @RequestPart("properties") CreateOrUpdateAd properties,
+            @RequestPart("image") MultipartFile image) {
 
         Integer currentUserId = authUtils.getCurrentUserId();
         Ad ad = adsService.addAd(properties, currentUserId, image);
@@ -67,12 +54,11 @@ public class AdsController {
     @ApiResponse(responseCode = "401", description = "Unauthorized")
     @ApiResponse(responseCode = "404", description = "Not found")
     public ResponseEntity<ExtendedAd> getAd(@PathVariable Integer id) {
-        log.info("Получение объявления с ID: {}", id);
-        ExtendedAd ad = new ExtendedAd();
-        ad.setPk(id);
-        ad.setTitle("Пример заголовка");
-        ad.setDescription("Пример описания");
-        // Остальные поля будут null, это нормально для заглушки
+        log.info("Запрос объявления с ID: {}", id);
+
+        // ✅ ТЕПЕРЬ ВЫЗЫВАЕМ МЕТОД ЧЕРЕЗ ИНТЕРФЕЙС. Приведение типов УДАЛЕНО.
+        ExtendedAd ad = adsService.getExtendedAdById(id);
+
         return ResponseEntity.ok(ad);
     }
 
@@ -83,8 +69,9 @@ public class AdsController {
     @ApiResponse(responseCode = "403", description = "Forbidden")
     @ApiResponse(responseCode = "404", description = "Not found")
     public ResponseEntity<?> removeAd(@PathVariable Integer id) {
-        log.info("Удаление объявления с ID: {}", id);
-        return ResponseEntity.noContent().build(); // 204 No Content
+        Integer currentUserId = authUtils.getCurrentUserId();
+        adsService.removeAd(id, currentUserId);
+        return ResponseEntity.noContent().build();
     }
 
     @PatchMapping("/{id}")
@@ -94,11 +81,8 @@ public class AdsController {
     @ApiResponse(responseCode = "403", description = "Forbidden")
     @ApiResponse(responseCode = "404", description = "Not found")
     public ResponseEntity<Ad> updateAd(@PathVariable Integer id, @RequestBody CreateOrUpdateAd dto) {
-        log.info("Обновление объявления ID: {}. Новые данные: {}", id, dto);
-        Ad ad = new Ad();
-        ad.setPk(id);
-        ad.setTitle(dto.getTitle());
-        ad.setPrice(dto.getPrice());
+        Integer currentUserId = authUtils.getCurrentUserId();
+        Ad ad = adsService.updateAd(id, dto, currentUserId);
         return ResponseEntity.ok(ad);
     }
 
@@ -107,10 +91,8 @@ public class AdsController {
     @ApiResponse(responseCode = "200", description = "OK")
     @ApiResponse(responseCode = "401", description = "Unauthorized")
     public ResponseEntity<Ads> getAdsMe() {
-        log.info("Получение объявлений авторизованного пользователя");
-        Ads ads = new Ads();
-        ads.setCount(0);
-        ads.setResults(Collections.emptyList());
+        Integer currentUserId = authUtils.getCurrentUserId();
+        Ads ads = adsService.getAdsByAuthor(currentUserId);
         return ResponseEntity.ok(ads);
     }
 
@@ -121,8 +103,8 @@ public class AdsController {
     @ApiResponse(responseCode = "403", description = "Forbidden")
     @ApiResponse(responseCode = "404", description = "Not found")
     public ResponseEntity<?> updateImage(@PathVariable Integer id, @RequestPart("image") MultipartFile image) {
-        log.info("Обновление картинки для объявления ID: {}. Файл: {}", id, image.getOriginalFilename());
-        return ResponseEntity.ok().build();
+        Integer currentUserId = authUtils.getCurrentUserId();
+        Ad updatedAd = adsService.updateImage(id, image, currentUserId);
+        return ResponseEntity.ok(updatedAd);
     }
-
 }

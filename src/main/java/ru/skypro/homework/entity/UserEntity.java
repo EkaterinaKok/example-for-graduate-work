@@ -37,6 +37,9 @@ public class UserEntity {
     @Column(name = "password_hash", nullable = false)
     private String passwordHash;
 
+    @Column(name = "image_url", length = 500)
+    private String image;
+
     // Связь: у пользователя много объявлений. Lazy обязательно!
     @OneToMany(mappedBy = "author", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<AdEntity> ads;
