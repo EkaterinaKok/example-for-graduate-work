@@ -67,15 +67,7 @@ public class UsersServiceImpl implements UsersService {
         UserEntity user = usersRepository.findById(currentUserId)
                 .orElseThrow(() -> new ResponseStatusException(NOT_FOUND, "Пользователь не найден"));
 
-        if (dto.getFirstName() != null) {
-            user.setFirstName(dto.getFirstName());
-        }
-        if (dto.getLastName() != null) {
-            user.setLastName(dto.getLastName());
-        }
-        if (dto.getPhone() != null) {
-            user.setPhone(dto.getPhone());
-        }
+        userMapper.updateFromDto(dto, user);
 
     }
 

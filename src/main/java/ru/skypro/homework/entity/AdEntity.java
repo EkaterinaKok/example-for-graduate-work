@@ -2,15 +2,18 @@ package ru.skypro.homework.entity;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
-import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Objects;
 
+@Setter
+@Getter
 @Entity
 @Table(name = "ads")
-@Data
 @NoArgsConstructor
 @AllArgsConstructor
 public class AdEntity {
@@ -22,7 +25,7 @@ public class AdEntity {
     @Column(nullable = false, length = 100)
     private String title;
 
-    @Lob // Для длинных текстов описания
+    @Column(length = 1000)
     private String description;
 
     @Column(nullable = false)
@@ -40,5 +43,26 @@ public class AdEntity {
 
     @OneToMany(mappedBy = "ad", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<CommentEntity> comments;
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof AdEntity adEntity)) return false;
+        return pk != null && pk.equals(adEntity.pk);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(pk);
+    }
+
+    @Override
+    public String toString() {
+        return "AdEntity{" +
+                "pk=" + pk +
+                ", title='" + title + '\'' +
+                ", price=" + price +
+                '}';
+    }
 
 }

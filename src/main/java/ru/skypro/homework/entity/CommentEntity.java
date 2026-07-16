@@ -2,12 +2,16 @@ package ru.skypro.homework.entity;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
-import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
+import java.util.Objects;
+
+@Setter
+@Getter
 @Entity
 @Table(name = "comments")
-@Data
 @NoArgsConstructor
 @AllArgsConstructor
 public class CommentEntity {
@@ -29,5 +33,27 @@ public class CommentEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "ad_id", nullable = false)
     private AdEntity ad;
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof CommentEntity)) return false;
+        CommentEntity that = (CommentEntity) o;
+        return pk != null && pk.equals(that.pk);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(pk);
+    }
+
+    @Override
+    public String toString() {
+        return "CommentEntity{" +
+                "pk=" + pk +
+                ", text='" + text + '\'' +
+                ", createdAt=" + createdAt +
+                '}';
+    }
 
 }

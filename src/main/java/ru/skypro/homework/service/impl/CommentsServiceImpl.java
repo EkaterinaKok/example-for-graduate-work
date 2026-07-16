@@ -8,6 +8,8 @@ import ru.skypro.homework.dto.Comments;
 import ru.skypro.homework.entity.AdEntity;
 import ru.skypro.homework.entity.CommentEntity;
 import ru.skypro.homework.entity.UserEntity;
+import ru.skypro.homework.exception.AccessDeniedExceptionCustom;
+import ru.skypro.homework.exception.NotFoundException;
 import ru.skypro.homework.mapper.CommentMapper;
 import ru.skypro.homework.repository.AdsRepository;
 import ru.skypro.homework.repository.CommentsRepository;
@@ -30,7 +32,7 @@ public class CommentsServiceImpl implements CommentsService {
     @Override
     public Comments getCommentsByAd(Integer adPk) {
         adsRepository.findById(adPk)
-                .orElseThrow(() -> new RuntimeException("Объявление с ID " + adPk + " не найдено"));
+                .orElseThrow(() -> new NotFoundException("Объявление с ID " + adPk + " не найдено"));
 
         List<CommentEntity> comments = commentsRepository.findAllByAdPk(adPk);
 
@@ -47,10 +49,10 @@ public class CommentsServiceImpl implements CommentsService {
     @Override
     public Comment addComment(Integer adId, String text, Integer authorId) {
         AdEntity ad = adsRepository.findById(adId)
-                .orElseThrow(() -> new RuntimeException("Объявление не найдено"));
+                .orElseThrow(() -> new NotFoundException("Объявление с ID " + adId + " не найдено"));
 
         UserEntity author = usersRepository.findById(authorId)
-                .orElseThrow(() -> new RuntimeException("Пользователь-автор не найден"));
+                .orElseThrow(() -> new NotFoundException("Пользователь с ID " + authorId + " не найден"));
 
         CommentEntity commentEntity = new CommentEntity();
         commentEntity.setText(text);
@@ -66,26 +68,24 @@ public class CommentsServiceImpl implements CommentsService {
     @Override
     public void deleteComment(Integer commentId, Integer currentUserId) {
         CommentEntity comment = commentsRepository.findById(commentId)
-                .orElseThrow(() -> new RuntimeException("Комментарий не найден"));
+                .orElseThrow(() -> new NotFoundException("Комментарий с ID " + commentId + " не найден"));
 
         if (!comment.getAuthor().getId().equals(currentUserId)) {
-            throw new RuntimeException("Доступ запрещен: нельзя удалять чужие комментарии");
+            throw new AccessDeniedExceptionCustom("Доступ запрещен: нельзя удалять чужие комментарии");
         }
-
         commentsRepository.delete(comment);
     }
 
     @Override
     public Comment updateComment(Integer commentId, String newText, Integer currentUserId) {
         CommentEntity comment = commentsRepository.findById(commentId)
-                .orElseThrow(() -> new RuntimeException("Комментарий не найден"));
+                .orElseThrow(() -> new NotFoundException("Комментарий с ID " + commentId + " не найден"));
 
         if (!comment.getAuthor().getId().equals(currentUserId)) {
-            throw new RuntimeException("Доступ запрещен: нельзя редактировать чужие комментарии");
+            throw new AccessDeniedExceptionCustom("Доступ запрещен: нельзя редактировать чужие комментарии");
         }
 
         comment.setText(newText);
-
         return commentMapper.toDto(commentsRepository.save(comment));
     }
 

@@ -10,7 +10,10 @@ import ru.skypro.homework.dto.CreateOrUpdateAd;
 import ru.skypro.homework.dto.ExtendedAd;
 import ru.skypro.homework.entity.AdEntity;
 import ru.skypro.homework.entity.UserEntity;
+import ru.skypro.homework.exception.AccessDeniedExceptionCustom;
+import ru.skypro.homework.exception.NotFoundException;
 import ru.skypro.homework.mapper.AdMapper;
+import ru.skypro.homework.mapper.ExtendedAdMapper;
 import ru.skypro.homework.repository.AdsRepository;
 import ru.skypro.homework.repository.UsersRepository;
 import ru.skypro.homework.service.AdsService;
@@ -27,6 +30,7 @@ public class AdsServiceImpl implements AdsService {
     private final AdsRepository adsRepository;
     private final UsersRepository usersRepository;
     private final AdMapper adMapper;
+    private final ExtendedAdMapper extendedAdMapper;
 
     @Override
     public Ads getAllAds() {
@@ -44,14 +48,14 @@ public class AdsServiceImpl implements AdsService {
     @Override
     public Ad getAdById(Integer id) {
         AdEntity ad = adsRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Объявление не найдено"));
+                .orElseThrow(() -> new NotFoundException("Объявление с ID " + id + " не найдено"));
         return adMapper.toDto(ad);
     }
 
     @Override
     public Ad addAd(CreateOrUpdateAd dto, Integer authorId, MultipartFile image) {
         UserEntity author = usersRepository.findById(authorId)
-                .orElseThrow(() -> new RuntimeException("Автор не найден"));
+                .orElseThrow(() -> new NotFoundException("Пользователь с ID " + authorId + " не найден"));
 
         AdEntity adEntity = adMapper.toEntity(dto);
 
@@ -71,28 +75,25 @@ public class AdsServiceImpl implements AdsService {
     @Transactional
     public void removeAd(Integer id, Integer currentUserId) {
         AdEntity ad = adsRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Объявление не найдено"));
+                .orElseThrow(() -> new NotFoundException("Объявление с ID " + id + " не найдено"));
 
         if (!ad.getAuthor().getId().equals(currentUserId)) {
-            throw new RuntimeException("Нельзя удалять чужие объявления");
+            throw new AccessDeniedExceptionCustom("Нельзя удалять чужие объявления");
         }
-
         adsRepository.delete(ad);
     }
 
     @Override
+    @Transactional
     public Ad updateAd(Integer id, CreateOrUpdateAd dto, Integer currentUserId) {
         AdEntity ad = adsRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Объявление не найдено"));
+                .orElseThrow(() -> new NotFoundException("Объявление с ID " + id + " не найдено"));
 
         if (!ad.getAuthor().getId().equals(currentUserId)) {
-            throw new RuntimeException("Нельзя обновлять чужие объявления");
+            throw new AccessDeniedExceptionCustom("Нельзя обновлять чужие объявления");
         }
 
-        if (dto.getTitle() != null) ad.setTitle(dto.getTitle());
-        if (dto.getPrice() != null) ad.setPrice(dto.getPrice());
-        if (dto.getDescription() != null) ad.setDescription(dto.getDescription());
-
+        adMapper.updateFromDto(dto, ad);
         AdEntity updated = adsRepository.save(ad);
         return adMapper.toDto(updated);
     }
@@ -115,7 +116,11 @@ public class AdsServiceImpl implements AdsService {
     @Override
     public Ad updateImage(Integer id, MultipartFile image, Integer currentUserId) {
         AdEntity ad = adsRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Объявление не найдено"));
+                .orElseThrow(() -> new NotFoundException("Объявление с ID " + id + " не найдено"));
+
+        if (!ad.getAuthor().getId().equals(currentUserId)) {
+            throw new AccessDeniedExceptionCustom("Нельзя обновлять изображение чужого объявления");
+        }
 
         if (image != null && !image.isEmpty()) {
             String path = "images/" + image.getOriginalFilename();
@@ -128,24 +133,8 @@ public class AdsServiceImpl implements AdsService {
     @Override
     public ExtendedAd getExtendedAdById(Integer id) {
         AdEntity ad = adsRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Объявление не найдено"));
-
-        ExtendedAd dto = new ExtendedAd();
-        dto.setPk(ad.getPk());
-        dto.setTitle(ad.getTitle());
-        dto.setPrice(ad.getPrice());
-        dto.setDescription(ad.getDescription());
-        dto.setImage(ad.getImage());
-
-        UserEntity author = ad.getAuthor();
-        if (author != null) {
-            dto.setAuthorFirstName(author.getFirstName());
-            dto.setAuthorLastName(author.getLastName());
-            dto.setEmail(author.getEmail());
-            dto.setPhone(author.getPhone());
-        }
-
-        return dto;
+                .orElseThrow(() -> new NotFoundException("Объявление с ID " + id + " не найдено"));
+        return extendedAdMapper.toExtendedDto(ad);
     }
 
 }

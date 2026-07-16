@@ -5,7 +5,6 @@ import lombok.Data;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -26,13 +25,19 @@ public class GlobalExceptionHandler {
         private int status;
     }
 
-    @ExceptionHandler(ResponseStatusException.class)
-    public ResponseEntity<ErrorResponse> handleResponseStatusException(ResponseStatusException ex) {
-        HttpStatus status = (HttpStatus) ex.getStatusCode();
-
+    @ExceptionHandler(NotFoundException.class)
+    public ResponseEntity<ErrorResponse> handleNotFoundException(NotFoundException ex) {
         return new ResponseEntity<>(
-                new ErrorResponse(LocalDateTime.now(), ex.getReason(), status.value()),
-                status
+                new ErrorResponse(LocalDateTime.now(), ex.getMessage(), HttpStatus.NOT_FOUND.value()),
+                HttpStatus.NOT_FOUND
+        );
+    }
+
+    @ExceptionHandler(AccessDeniedExceptionCustom.class)
+    public ResponseEntity<ErrorResponse> handleAccessDeniedCustom(AccessDeniedExceptionCustom ex) {
+        return new ResponseEntity<>(
+                new ErrorResponse(LocalDateTime.now(), ex.getMessage(), HttpStatus.FORBIDDEN.value()),
+                HttpStatus.FORBIDDEN
         );
     }
 
@@ -44,8 +49,8 @@ public class GlobalExceptionHandler {
         );
     }
 
-    @ExceptionHandler(UsernameNotFoundException.class)
-    public ResponseEntity<ErrorResponse> handleNotFound(UsernameNotFoundException ex) {
+    @ExceptionHandler(org.springframework.security.core.userdetails.UsernameNotFoundException.class)
+    public ResponseEntity<ErrorResponse> handleUsernameNotFound(org.springframework.security.core.userdetails.UsernameNotFoundException ex) {
         return new ResponseEntity<>(
                 new ErrorResponse(LocalDateTime.now(), ex.getMessage(), HttpStatus.NOT_FOUND.value()),
                 HttpStatus.NOT_FOUND
@@ -59,6 +64,15 @@ public class GlobalExceptionHandler {
                 errors.put(error.getField(), error.getDefaultMessage())
         );
         return ResponseEntity.badRequest().body(errors);
+    }
+
+    @ExceptionHandler(ResponseStatusException.class)
+    public ResponseEntity<ErrorResponse> handleResponseStatusException(ResponseStatusException ex) {
+        HttpStatus status = (HttpStatus) ex.getStatusCode();
+        return new ResponseEntity<>(
+                new ErrorResponse(LocalDateTime.now(), ex.getReason(), status.value()),
+                status
+        );
     }
 
     @ExceptionHandler(Exception.class)

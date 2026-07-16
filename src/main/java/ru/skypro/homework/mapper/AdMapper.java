@@ -5,7 +5,7 @@ import ru.skypro.homework.dto.Ad;
 import ru.skypro.homework.dto.CreateOrUpdateAd;
 import ru.skypro.homework.entity.AdEntity;
 
-@Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)
+@Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.ERROR)
 public interface AdMapper {
 
     @Mappings({
@@ -20,12 +20,15 @@ public interface AdMapper {
     @Mapping(target = "pk", ignore = true)
     @Mapping(target = "createdAt", ignore = true)
     @Mapping(target = "comments", ignore = true)
+    @Mapping(target = "description", source = "description")
+    @Mapping(target = "author", ignore = true)
     AdEntity toEntity(CreateOrUpdateAd dto);
 
     @Mapping(target = "pk", ignore = true)
     @Mapping(target = "createdAt", ignore = true)
     @Mapping(target = "comments", ignore = true)
     @Mapping(target = "author", ignore = true)
+    @Mapping(target = "description", source = "description")
     void updateFromDto(CreateOrUpdateAd dto, @MappingTarget AdEntity entity);
 
 }
