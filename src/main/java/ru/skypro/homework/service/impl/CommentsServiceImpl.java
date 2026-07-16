@@ -1,6 +1,9 @@
 package ru.skypro.homework.service.impl;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.skypro.homework.dto.Comment;
@@ -70,9 +73,20 @@ public class CommentsServiceImpl implements CommentsService {
         CommentEntity comment = commentsRepository.findById(commentId)
                 .orElseThrow(() -> new NotFoundException("Комментарий с ID " + commentId + " не найден"));
 
-        if (!comment.getAuthor().getId().equals(currentUserId)) {
-            throw new AccessDeniedExceptionCustom("Доступ запрещен: нельзя удалять чужие комментарии");
+        boolean isAuthor = comment.getAuthor().getId().equals(currentUserId);
+
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        boolean isAdmin = false;
+
+        if (auth != null && !(auth instanceof AnonymousAuthenticationToken)) {
+            isAdmin = auth.getAuthorities().stream()
+                    .anyMatch(grantedAuthority -> grantedAuthority.getAuthority().contains("ADMIN"));
         }
+
+        if (!isAuthor && !isAdmin) {
+            throw new AccessDeniedExceptionCustom("Доступ запрещен: вы не автор и не администратор");
+        }
+
         commentsRepository.delete(comment);
     }
 
@@ -81,8 +95,18 @@ public class CommentsServiceImpl implements CommentsService {
         CommentEntity comment = commentsRepository.findById(commentId)
                 .orElseThrow(() -> new NotFoundException("Комментарий с ID " + commentId + " не найден"));
 
-        if (!comment.getAuthor().getId().equals(currentUserId)) {
-            throw new AccessDeniedExceptionCustom("Доступ запрещен: нельзя редактировать чужие комментарии");
+        boolean isAuthor = comment.getAuthor().getId().equals(currentUserId);
+
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        boolean isAdmin = false;
+
+        if (auth != null && !(auth instanceof AnonymousAuthenticationToken)) {
+            isAdmin = auth.getAuthorities().stream()
+                    .anyMatch(grantedAuthority -> grantedAuthority.getAuthority().contains("ADMIN"));
+        }
+
+        if (!isAuthor && !isAdmin) {
+            throw new AccessDeniedExceptionCustom("Доступ запрещен: вы не автор и не администратор");
         }
 
         comment.setText(newText);

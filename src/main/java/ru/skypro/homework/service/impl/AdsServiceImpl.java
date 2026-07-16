@@ -1,6 +1,9 @@
 package ru.skypro.homework.service.impl;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -77,9 +80,20 @@ public class AdsServiceImpl implements AdsService {
         AdEntity ad = adsRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Объявление с ID " + id + " не найдено"));
 
-        if (!ad.getAuthor().getId().equals(currentUserId)) {
-            throw new AccessDeniedExceptionCustom("Нельзя удалять чужие объявления");
+        boolean isOwner = ad.getAuthor().getId().equals(currentUserId);
+
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        boolean isAdmin = false;
+
+        if (auth != null && !(auth instanceof AnonymousAuthenticationToken)) {
+            isAdmin = auth.getAuthorities().stream()
+                    .anyMatch(grantedAuthority -> grantedAuthority.getAuthority().contains("ADMIN"));
         }
+
+        if (!isOwner && !isAdmin) {
+            throw new AccessDeniedExceptionCustom("Доступ запрещен: вы не владелец и не администратор");
+        }
+
         adsRepository.delete(ad);
     }
 
@@ -89,8 +103,18 @@ public class AdsServiceImpl implements AdsService {
         AdEntity ad = adsRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Объявление с ID " + id + " не найдено"));
 
-        if (!ad.getAuthor().getId().equals(currentUserId)) {
-            throw new AccessDeniedExceptionCustom("Нельзя обновлять чужие объявления");
+        boolean isOwner = ad.getAuthor().getId().equals(currentUserId);
+
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        boolean isAdmin = false;
+
+        if (auth != null && !(auth instanceof AnonymousAuthenticationToken)) {
+            isAdmin = auth.getAuthorities().stream()
+                    .anyMatch(grantedAuthority -> grantedAuthority.getAuthority().contains("ADMIN"));
+        }
+
+        if (!isOwner && !isAdmin) {
+            throw new AccessDeniedExceptionCustom("Доступ запрещен: вы не владелец и не администратор");
         }
 
         adMapper.updateFromDto(dto, ad);
@@ -100,7 +124,6 @@ public class AdsServiceImpl implements AdsService {
 
     @Override
     public Ads getAdsByAuthor(Integer authorId) {
-
         List<AdEntity> ads = adsRepository.findAllByAuthorId(authorId);
 
         List<Ad> dtoList = ads.stream()
@@ -118,8 +141,18 @@ public class AdsServiceImpl implements AdsService {
         AdEntity ad = adsRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Объявление с ID " + id + " не найдено"));
 
-        if (!ad.getAuthor().getId().equals(currentUserId)) {
-            throw new AccessDeniedExceptionCustom("Нельзя обновлять изображение чужого объявления");
+        boolean isOwner = ad.getAuthor().getId().equals(currentUserId);
+
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        boolean isAdmin = false;
+
+        if (auth != null && !(auth instanceof AnonymousAuthenticationToken)) {
+            isAdmin = auth.getAuthorities().stream()
+                    .anyMatch(grantedAuthority -> grantedAuthority.getAuthority().contains("ADMIN"));
+        }
+
+        if (!isOwner && !isAdmin) {
+            throw new AccessDeniedExceptionCustom("Доступ запрещен: вы не владелец и не администратор");
         }
 
         if (image != null && !image.isEmpty()) {
