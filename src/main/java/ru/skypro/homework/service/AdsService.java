@@ -1,7 +1,28 @@
 package ru.skypro.homework.service;
 
-import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
+import ru.skypro.homework.dto.Ad;
+import ru.skypro.homework.dto.Ads;
+import ru.skypro.homework.dto.CreateOrUpdateAd;
+import ru.skypro.homework.dto.ExtendedAd;
 
-@Service
-public class AdsService {
+public interface AdsService {
+
+    Ads getAllAds();
+
+    Ad addAd(CreateOrUpdateAd dto, Integer authorId, MultipartFile image);
+
+    void removeAd(Integer id, Integer currentUserId);
+
+    Ad updateAd(Integer id, CreateOrUpdateAd dto, Integer currentUserId);
+
+    Ads getAdsByAuthor(Integer authorId);
+
+    Ad updateImage(Integer id, MultipartFile image, Integer currentUserId);
+
+    ExtendedAd getExtendedAdById(Integer id);
+
+    Ad getAdById(Integer id);
+
 }
+

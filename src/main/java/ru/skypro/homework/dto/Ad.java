@@ -11,7 +11,7 @@ import lombok.NoArgsConstructor;
 public class Ad {
 
     @Schema(description = "Уникальный идентификатор автора", example = "100", accessMode = Schema.AccessMode.READ_ONLY)
-    private Integer author;
+    private Integer authorId;
 
     @Schema(description = "Ссылка на изображение объявления", example = "https://site.com/img/1.jpg")
     private String image;

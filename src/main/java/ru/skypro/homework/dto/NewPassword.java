@@ -11,6 +11,7 @@ import jakarta.validation.constraints.Size;
 @NoArgsConstructor
 @AllArgsConstructor
 public class NewPassword {
+
     @NotNull
     @Size(min = 8, max = 16)
     @Schema(description = "Текущий пароль пользователя", example = "oldPass123")
@@ -20,4 +21,5 @@ public class NewPassword {
     @Size(min = 8, max = 16)
     @Schema(description = "Новый пароль пользователя", example = "newPass456")
     private String newPassword;
+
 }

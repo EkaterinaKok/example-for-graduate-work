@@ -30,6 +30,7 @@ public class UsersController {
     @ApiResponse(responseCode = "403", description = "Forbidden")
     public ResponseEntity<?> setPassword(@RequestBody NewPassword dto) {
         log.info("Запрос на смену пароля для пользователя");
+        usersService.setPassword(dto);
         return ResponseEntity.ok().build();
     }
 
@@ -38,8 +39,8 @@ public class UsersController {
     @ApiResponse(responseCode = "200", description = "OK")
     @ApiResponse(responseCode = "401", description = "Unauthorized")
     public ResponseEntity<User> getUser() {
-        log.info("Запрос данных текущего пользователя (заглушка)");
-        return ResponseEntity.ok(new User());
+        log.info("Запрос данных текущего пользователя");
+        return ResponseEntity.ok(usersService.getUser());
     }
 
     @PatchMapping("/me")
@@ -48,7 +49,7 @@ public class UsersController {
     @ApiResponse(responseCode = "401", description = "Unauthorized")
     public ResponseEntity<UpdateUser> updateUser(@RequestBody UpdateUser dto) {
         log.info("Обновление профиля пользователя. Данные: {}", dto);
-        // Возвращаем тот же DTO, который прислали (или пустой, если надо)
+        usersService.updateUser(dto);
         return ResponseEntity.ok(dto);
     }
 
@@ -58,6 +59,7 @@ public class UsersController {
     @ApiResponse(responseCode = "401", description = "Unauthorized")
     public ResponseEntity<?> updateUserImage(@RequestPart("image") MultipartFile image) {
         log.info("Загрузка аватара. Файл: {}, размер: {} байт", image.getOriginalFilename(), image.getSize());
+        usersService.updateUserImage(image);
         return ResponseEntity.ok().build();
     }
 }

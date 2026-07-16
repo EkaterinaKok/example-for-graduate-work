@@ -23,4 +23,5 @@ public class UpdateUser {
     @Pattern(regexp = "\\+7\\s?\\(?\\d{3}\\)?\\s?\\d{3}-?\\d{2}-?\\d{2}", message = "Неверный формат телефона")
     @Schema(description = "Телефон в формате +7...", example = "+79991234567")
     private String phone;
+
 }

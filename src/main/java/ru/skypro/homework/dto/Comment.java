@@ -10,22 +10,20 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class Comment {
 
-    @Schema(description = "ID автора комментария", example = "105")
-    private Integer author;
-
-    @Schema(description = "Ссылка на аватар автора", example = "https://cdn.skypro.ru/avatars/user_105.jpg")
-    private String authorImage;
-
-    @Schema(description = "Имя автора комментария", example = "Анна")
-    private String authorFirstName;
-
-    @Schema(description = "Дата и время создания комментария (Unix timestamp в миллисекундах)", example = "1715623456789")
-    private Long createdAt;
-
-    @Schema(description = "ID комментария", example = "999")
+    @Schema(description = "Уникальный идентификатор комментария", example = "10", accessMode = Schema.AccessMode.READ_ONLY)
     private Integer pk;
 
-    @Schema(description = "Текст комментария", example = "Товар отличный, доставка быстрая!")
+    @Schema(description = "Текст комментария", example = "Отличный товар!")
     private String text;
+
+    @Schema(description = "ID автора комментария", example = "5")
+    private Integer authorId;
+
+    @Schema(description = "ID объявления, к которому относится комментарий", example = "20")
+    private Integer adId;
+
+    @Schema(description = "Дата создания комментария (Unix timestamp, ms)", example = "1715623456789")
+    private Long createdAt;
+
 }
 

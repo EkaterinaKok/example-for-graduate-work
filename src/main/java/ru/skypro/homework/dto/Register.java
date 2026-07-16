@@ -40,4 +40,5 @@ public class Register {
 
     @Schema(description = "Роль пользователя при регистрации", example = "USER")
     private Role role;
+
 }
