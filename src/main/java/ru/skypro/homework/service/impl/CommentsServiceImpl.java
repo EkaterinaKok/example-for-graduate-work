@@ -1,9 +1,6 @@
 package ru.skypro.homework.service.impl;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.authentication.AnonymousAuthenticationToken;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.skypro.homework.dto.Comment;
@@ -17,6 +14,7 @@ import ru.skypro.homework.mapper.CommentMapper;
 import ru.skypro.homework.repository.AdsRepository;
 import ru.skypro.homework.repository.CommentsRepository;
 import ru.skypro.homework.repository.UsersRepository;
+import ru.skypro.homework.security.SecurityUtils;
 import ru.skypro.homework.service.CommentsService;
 
 import java.util.List;
@@ -38,7 +36,6 @@ public class CommentsServiceImpl implements CommentsService {
                 .orElseThrow(() -> new NotFoundException("Объявление с ID " + adPk + " не найдено"));
 
         List<CommentEntity> comments = commentsRepository.findAllByAdPk(adPk);
-
         List<Comment> dtoList = comments.stream()
                 .map(commentMapper::toDto)
                 .collect(Collectors.toList());
@@ -61,7 +58,6 @@ public class CommentsServiceImpl implements CommentsService {
         commentEntity.setText(text);
         commentEntity.setAd(ad);
         commentEntity.setAuthor(author);
-
         commentEntity.setCreatedAt(System.currentTimeMillis());
 
         CommentEntity saved = commentsRepository.save(commentEntity);
@@ -69,22 +65,15 @@ public class CommentsServiceImpl implements CommentsService {
     }
 
     @Override
+    @Transactional
     public void deleteComment(Integer commentId, Integer currentUserId) {
         CommentEntity comment = commentsRepository.findById(commentId)
                 .orElseThrow(() -> new NotFoundException("Комментарий с ID " + commentId + " не найден"));
 
-        boolean isAuthor = comment.getAuthor().getId().equals(currentUserId);
-
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        boolean isAdmin = false;
-
-        if (auth != null && !(auth instanceof AnonymousAuthenticationToken)) {
-            isAdmin = auth.getAuthorities().stream()
-                    .anyMatch(grantedAuthority -> grantedAuthority.getAuthority().contains("ADMIN"));
-        }
-
-        if (!isAuthor && !isAdmin) {
-            throw new AccessDeniedExceptionCustom("Доступ запрещен: вы не автор и не администратор");
+        if (!SecurityUtils.hasAccess(comment.getAuthor().getId(), currentUserId)) {
+            throw new AccessDeniedExceptionCustom(
+                    "Доступ запрещен: вы не автор комментария и не администратор"
+            );
         }
 
         commentsRepository.delete(comment);
@@ -95,18 +84,10 @@ public class CommentsServiceImpl implements CommentsService {
         CommentEntity comment = commentsRepository.findById(commentId)
                 .orElseThrow(() -> new NotFoundException("Комментарий с ID " + commentId + " не найден"));
 
-        boolean isAuthor = comment.getAuthor().getId().equals(currentUserId);
-
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        boolean isAdmin = false;
-
-        if (auth != null && !(auth instanceof AnonymousAuthenticationToken)) {
-            isAdmin = auth.getAuthorities().stream()
-                    .anyMatch(grantedAuthority -> grantedAuthority.getAuthority().contains("ADMIN"));
-        }
-
-        if (!isAuthor && !isAdmin) {
-            throw new AccessDeniedExceptionCustom("Доступ запрещен: вы не автор и не администратор");
+        if (!SecurityUtils.hasAccess(comment.getAuthor().getId(), currentUserId)) {
+            throw new AccessDeniedExceptionCustom(
+                    "Доступ запрещен: вы не автор комментария и не администратор"
+            );
         }
 
         comment.setText(newText);

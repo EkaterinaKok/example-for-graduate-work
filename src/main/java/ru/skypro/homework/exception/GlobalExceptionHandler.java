@@ -34,18 +34,14 @@ public class GlobalExceptionHandler {
         );
     }
 
-    @ExceptionHandler(AccessDeniedExceptionCustom.class)
-    public ResponseEntity<ErrorResponse> handleAccessDeniedCustom(AccessDeniedExceptionCustom ex) {
-        return new ResponseEntity<>(
-                new ErrorResponse(LocalDateTime.now(), ex.getMessage(), HttpStatus.FORBIDDEN.value()),
-                HttpStatus.FORBIDDEN
-        );
-    }
-
     @ExceptionHandler(AccessDeniedException.class)
     public ResponseEntity<ErrorResponse> handleForbidden(AccessDeniedException ex) {
+        String message = (ex instanceof AccessDeniedExceptionCustom)
+                ? ex.getMessage()
+                : "Доступ запрещен";
+
         return new ResponseEntity<>(
-                new ErrorResponse(LocalDateTime.now(), "Доступ запрещен", HttpStatus.FORBIDDEN.value()),
+                new ErrorResponse(LocalDateTime.now(), message, HttpStatus.FORBIDDEN.value()),
                 HttpStatus.FORBIDDEN
         );
     }

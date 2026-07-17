@@ -25,9 +25,8 @@ public class UsersController {
 
     @PostMapping("/set_password")
     @Operation(summary = "Обновление пароля")
-    @ApiResponse(responseCode = "200", description = "OK")
-    @ApiResponse(responseCode = "401", description = "Unauthorized")
-    @ApiResponse(responseCode = "403", description = "Forbidden")
+    @ApiResponse(responseCode = "200", description = "Пароль успешно изменен")
+    @ApiResponse(responseCode = "400", description = "Неверный текущий пароль или невалидные данные")
     public ResponseEntity<?> setPassword(@RequestBody NewPassword dto) {
         log.info("Запрос на смену пароля для пользователя");
         usersService.setPassword(dto);

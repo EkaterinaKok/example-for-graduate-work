@@ -1,9 +1,6 @@
 package ru.skypro.homework.service.impl;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.authentication.AnonymousAuthenticationToken;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -13,12 +10,12 @@ import ru.skypro.homework.dto.CreateOrUpdateAd;
 import ru.skypro.homework.dto.ExtendedAd;
 import ru.skypro.homework.entity.AdEntity;
 import ru.skypro.homework.entity.UserEntity;
-import ru.skypro.homework.exception.AccessDeniedExceptionCustom;
 import ru.skypro.homework.exception.NotFoundException;
 import ru.skypro.homework.mapper.AdMapper;
 import ru.skypro.homework.mapper.ExtendedAdMapper;
 import ru.skypro.homework.repository.AdsRepository;
 import ru.skypro.homework.repository.UsersRepository;
+import ru.skypro.homework.security.SecurityUtils;
 import ru.skypro.homework.service.AdsService;
 
 import java.time.LocalDateTime;
@@ -61,7 +58,6 @@ public class AdsServiceImpl implements AdsService {
                 .orElseThrow(() -> new NotFoundException("Пользователь с ID " + authorId + " не найден"));
 
         AdEntity adEntity = adMapper.toEntity(dto);
-
         adEntity.setAuthor(author);
         adEntity.setCreatedAt(LocalDateTime.now());
 
@@ -80,18 +76,10 @@ public class AdsServiceImpl implements AdsService {
         AdEntity ad = adsRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Объявление с ID " + id + " не найдено"));
 
-        boolean isOwner = ad.getAuthor().getId().equals(currentUserId);
-
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        boolean isAdmin = false;
-
-        if (auth != null && !(auth instanceof AnonymousAuthenticationToken)) {
-            isAdmin = auth.getAuthorities().stream()
-                    .anyMatch(grantedAuthority -> grantedAuthority.getAuthority().contains("ADMIN"));
-        }
-
-        if (!isOwner && !isAdmin) {
-            throw new AccessDeniedExceptionCustom("Доступ запрещен: вы не владелец и не администратор");
+        if (!SecurityUtils.hasAccess(ad.getAuthor().getId(), currentUserId)) {
+            throw new ru.skypro.homework.exception.AccessDeniedExceptionCustom(
+                    "Доступ запрещен: вы не владелец объявления и не администратор"
+            );
         }
 
         adsRepository.delete(ad);
@@ -103,18 +91,10 @@ public class AdsServiceImpl implements AdsService {
         AdEntity ad = adsRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Объявление с ID " + id + " не найдено"));
 
-        boolean isOwner = ad.getAuthor().getId().equals(currentUserId);
-
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        boolean isAdmin = false;
-
-        if (auth != null && !(auth instanceof AnonymousAuthenticationToken)) {
-            isAdmin = auth.getAuthorities().stream()
-                    .anyMatch(grantedAuthority -> grantedAuthority.getAuthority().contains("ADMIN"));
-        }
-
-        if (!isOwner && !isAdmin) {
-            throw new AccessDeniedExceptionCustom("Доступ запрещен: вы не владелец и не администратор");
+        if (!SecurityUtils.hasAccess(ad.getAuthor().getId(), currentUserId)) {
+            throw new ru.skypro.homework.exception.AccessDeniedExceptionCustom(
+                    "Доступ запрещен: вы не владелец объявления и не администратор"
+            );
         }
 
         adMapper.updateFromDto(dto, ad);
@@ -125,7 +105,6 @@ public class AdsServiceImpl implements AdsService {
     @Override
     public Ads getAdsByAuthor(Integer authorId) {
         List<AdEntity> ads = adsRepository.findAllByAuthorId(authorId);
-
         List<Ad> dtoList = ads.stream()
                 .map(adMapper::toDto)
                 .collect(Collectors.toList());
@@ -137,22 +116,15 @@ public class AdsServiceImpl implements AdsService {
     }
 
     @Override
+    @Transactional
     public Ad updateImage(Integer id, MultipartFile image, Integer currentUserId) {
         AdEntity ad = adsRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Объявление с ID " + id + " не найдено"));
 
-        boolean isOwner = ad.getAuthor().getId().equals(currentUserId);
-
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        boolean isAdmin = false;
-
-        if (auth != null && !(auth instanceof AnonymousAuthenticationToken)) {
-            isAdmin = auth.getAuthorities().stream()
-                    .anyMatch(grantedAuthority -> grantedAuthority.getAuthority().contains("ADMIN"));
-        }
-
-        if (!isOwner && !isAdmin) {
-            throw new AccessDeniedExceptionCustom("Доступ запрещен: вы не владелец и не администратор");
+        if (!SecurityUtils.hasAccess(ad.getAuthor().getId(), currentUserId)) {
+            throw new ru.skypro.homework.exception.AccessDeniedExceptionCustom(
+                    "Доступ запрещен: вы не владелец объявления и не администратор"
+            );
         }
 
         if (image != null && !image.isEmpty()) {
