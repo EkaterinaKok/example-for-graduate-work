@@ -36,7 +36,7 @@ public class ExtendedAd {
     @Email(message = "Некорректный формат email")
     private String email;
 
-    @Schema(description = "Ссылка на главное фото товара", example = "https://cdn.skypro.ru/ads/505/main.jpg")
+    @Schema(description = "Относительный путь к изображению (для склейки с базовым URL)", example = "/images/550e8400-e29b-41d4-a716-446655440000.jpg")
     private String image;
 
     @Schema(description = "Телефон продавца", example = "+79991234567")

@@ -1,7 +1,7 @@
 package ru.skypro.homework.service.impl;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -11,19 +11,17 @@ import ru.skypro.homework.dto.NewPassword;
 import ru.skypro.homework.dto.UpdateUser;
 import ru.skypro.homework.dto.User;
 import ru.skypro.homework.entity.UserEntity;
+import ru.skypro.homework.exception.ImageUploadException;
 import ru.skypro.homework.mapper.UserMapper;
 import ru.skypro.homework.repository.UsersRepository;
 import ru.skypro.homework.security.AuthUtils;
 import ru.skypro.homework.service.UsersService;
 
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.UUID;
 
 import static org.springframework.http.HttpStatus.*;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 @Transactional
@@ -33,6 +31,7 @@ public class UsersServiceImpl implements UsersService {
     private final AuthUtils authUtils;
     private final PasswordEncoder passwordEncoder;
     private final UserMapper userMapper;
+    private final ImageStorageServiceImpl imageStorageService;
 
     @Override
     public void setPassword(NewPassword dto) {
@@ -77,24 +76,23 @@ public class UsersServiceImpl implements UsersService {
         }
 
         Integer currentUserId = authUtils.getCurrentUserId();
-
         UserEntity user = usersRepository.findById(currentUserId)
                 .orElseThrow(() -> new ResponseStatusException(NOT_FOUND, "Пользователь не найден"));
 
         try {
-            // 1. Создаем папку для загрузки, если её нет
-            Path uploadDir = Paths.get("uploads", "images");
-            if (!Files.exists(uploadDir)) {
-                Files.createDirectories(uploadDir);
-            }
 
-            String fileName = UUID.randomUUID() + "_" + image.getOriginalFilename();
-            Path filePath = uploadDir.resolve(fileName);
-            image.transferTo(filePath);
-            user.setImage("/images/" + fileName);
+            String originalFilename = image.getOriginalFilename();
+            byte[] fileBytes = image.getBytes();
+            String imagePath = imageStorageService.saveImage(fileBytes, originalFilename);
+            user.setImage(imagePath);
+            usersRepository.save(user);
 
         } catch (IOException e) {
-            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Ошибка сохранения файла аватара", e);
+            log.error("Ошибка загрузки аватара", e);
+            throw new ImageUploadException("Не удалось прочитать файл", e);
+        } catch (ImageUploadException e) {
+            log.error("Ошибка загрузки аватара", e);
+            throw new ResponseStatusException(INTERNAL_SERVER_ERROR, "Ошибка сохранения файла аватара", e);
         }
     }
 

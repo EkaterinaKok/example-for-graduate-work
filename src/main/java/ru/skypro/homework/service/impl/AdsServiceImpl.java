@@ -10,6 +10,7 @@ import ru.skypro.homework.dto.CreateOrUpdateAd;
 import ru.skypro.homework.dto.ExtendedAd;
 import ru.skypro.homework.entity.AdEntity;
 import ru.skypro.homework.entity.UserEntity;
+import ru.skypro.homework.exception.AccessDeniedExceptionCustom;
 import ru.skypro.homework.exception.NotFoundException;
 import ru.skypro.homework.mapper.AdMapper;
 import ru.skypro.homework.mapper.ExtendedAdMapper;
@@ -18,6 +19,7 @@ import ru.skypro.homework.repository.UsersRepository;
 import ru.skypro.homework.security.SecurityUtils;
 import ru.skypro.homework.service.AdsService;
 
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -31,6 +33,7 @@ public class AdsServiceImpl implements AdsService {
     private final UsersRepository usersRepository;
     private final AdMapper adMapper;
     private final ExtendedAdMapper extendedAdMapper;
+    private final ImageStorageServiceImpl imageStorageService;
 
     @Override
     public Ads getAllAds() {
@@ -62,8 +65,16 @@ public class AdsServiceImpl implements AdsService {
         adEntity.setCreatedAt(LocalDateTime.now());
 
         if (image != null && !image.isEmpty()) {
-            String path = "images/" + image.getOriginalFilename();
-            adEntity.setImage(path);
+            try {
+
+                String originalFilename = image.getOriginalFilename();
+                byte[] fileBytes = image.getBytes();
+
+                String path = imageStorageService.saveImage(fileBytes, originalFilename);
+                adEntity.setImage(path);
+            } catch (IOException e) {
+                throw new RuntimeException("Ошибка чтения файла изображения", e);
+            }
         }
 
         AdEntity saved = adsRepository.save(adEntity);
@@ -122,16 +133,25 @@ public class AdsServiceImpl implements AdsService {
                 .orElseThrow(() -> new NotFoundException("Объявление с ID " + id + " не найдено"));
 
         if (!SecurityUtils.hasAccess(ad.getAuthor().getId(), currentUserId)) {
-            throw new ru.skypro.homework.exception.AccessDeniedExceptionCustom(
+            throw new AccessDeniedExceptionCustom(
                     "Доступ запрещен: вы не владелец объявления и не администратор"
             );
         }
 
         if (image != null && !image.isEmpty()) {
-            String path = "images/" + image.getOriginalFilename();
-            ad.setImage(path);
-            adsRepository.save(ad);
+            try {
+
+                String originalFilename = image.getOriginalFilename();
+                byte[] fileBytes = image.getBytes();
+
+                String newPath = imageStorageService.saveImage(fileBytes, originalFilename);
+                ad.setImage(newPath);
+                adsRepository.save(ad);
+            } catch (IOException e) {
+                throw new RuntimeException("Ошибка чтения файла изображения", e);
+            }
         }
+
         return adMapper.toDto(ad);
     }
 
