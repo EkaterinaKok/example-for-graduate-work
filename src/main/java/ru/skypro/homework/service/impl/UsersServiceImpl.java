@@ -22,8 +22,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.UUID;
 
-import static org.springframework.http.HttpStatus.NOT_FOUND;
-import static org.springframework.http.HttpStatus.UNAUTHORIZED;
+import static org.springframework.http.HttpStatus.*;
 
 @Service
 @RequiredArgsConstructor
@@ -43,7 +42,7 @@ public class UsersServiceImpl implements UsersService {
                 .orElseThrow(() -> new ResponseStatusException(NOT_FOUND, "Пользователь не найден"));
 
         if (!passwordEncoder.matches(dto.getCurrentPassword(), user.getPasswordHash())) {
-            throw new ResponseStatusException(UNAUTHORIZED, "Неверный текущий пароль");
+            throw new ResponseStatusException(BAD_REQUEST, "Неверный текущий пароль");
         }
 
         user.setPasswordHash(passwordEncoder.encode(dto.getNewPassword()));
@@ -74,7 +73,7 @@ public class UsersServiceImpl implements UsersService {
     @Override
     public void updateUserImage(MultipartFile image) {
         if (image == null || image.isEmpty()) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Файл изображения не предоставлен или пуст");
+            throw new ResponseStatusException(BAD_REQUEST, "Файл изображения не предоставлен или пуст");
         }
 
         Integer currentUserId = authUtils.getCurrentUserId();

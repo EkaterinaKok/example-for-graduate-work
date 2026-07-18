@@ -5,6 +5,7 @@ import lombok.Data;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -33,18 +34,14 @@ public class GlobalExceptionHandler {
         );
     }
 
-    @ExceptionHandler(AccessDeniedExceptionCustom.class)
-    public ResponseEntity<ErrorResponse> handleAccessDeniedCustom(AccessDeniedExceptionCustom ex) {
-        return new ResponseEntity<>(
-                new ErrorResponse(LocalDateTime.now(), ex.getMessage(), HttpStatus.FORBIDDEN.value()),
-                HttpStatus.FORBIDDEN
-        );
-    }
-
     @ExceptionHandler(AccessDeniedException.class)
     public ResponseEntity<ErrorResponse> handleForbidden(AccessDeniedException ex) {
+        String message = (ex instanceof AccessDeniedExceptionCustom)
+                ? ex.getMessage()
+                : "Доступ запрещен";
+
         return new ResponseEntity<>(
-                new ErrorResponse(LocalDateTime.now(), "Доступ запрещен", HttpStatus.FORBIDDEN.value()),
+                new ErrorResponse(LocalDateTime.now(), message, HttpStatus.FORBIDDEN.value()),
                 HttpStatus.FORBIDDEN
         );
     }
@@ -80,6 +77,14 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(
                 new ErrorResponse(LocalDateTime.now(), "Внутренняя ошибка сервера", HttpStatus.INTERNAL_SERVER_ERROR.value()),
                 HttpStatus.INTERNAL_SERVER_ERROR
+        );
+    }
+
+    @ExceptionHandler(BadCredentialsException.class)
+    public ResponseEntity<ErrorResponse> handleBadCredentials(BadCredentialsException ex) {
+        return new ResponseEntity<>(
+                new ErrorResponse(LocalDateTime.now(), "Неверный логин или пароль", HttpStatus.UNAUTHORIZED.value()),
+                HttpStatus.UNAUTHORIZED
         );
     }
 

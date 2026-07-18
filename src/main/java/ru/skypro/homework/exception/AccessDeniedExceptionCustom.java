@@ -1,10 +1,8 @@
 package ru.skypro.homework.exception;
 
-import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.security.access.AccessDeniedException;
 
-@ResponseStatus(HttpStatus.FORBIDDEN)
-public class AccessDeniedExceptionCustom extends RuntimeException {
+public class AccessDeniedExceptionCustom extends AccessDeniedException {
 
     public AccessDeniedExceptionCustom(String message) {
         super(message);
