@@ -36,8 +36,16 @@ public class CommentsServiceImpl implements CommentsService {
                 .orElseThrow(() -> new NotFoundException("Объявление с ID " + adPk + " не найдено"));
 
         List<CommentEntity> comments = commentsRepository.findAllByAdPk(adPk);
+
         List<Comment> dtoList = comments.stream()
-                .map(commentMapper::toDto)
+                .map(commentEntity -> {
+                    Comment dto = commentMapper.toDto(commentEntity);
+
+                    if (commentEntity.getAuthor() != null && commentEntity.getAuthor().getImage() != null) {
+                        dto.setImage(commentEntity.getAuthor().getImage());
+                    }
+                    return dto;
+                })
                 .collect(Collectors.toList());
 
         Comments result = new Comments();
@@ -61,7 +69,12 @@ public class CommentsServiceImpl implements CommentsService {
         commentEntity.setCreatedAt(System.currentTimeMillis());
 
         CommentEntity saved = commentsRepository.save(commentEntity);
-        return commentMapper.toDto(saved);
+
+        Comment dto = commentMapper.toDto(saved);
+        if (saved.getAuthor() != null && saved.getAuthor().getImage() != null) {
+            dto.setImage(saved.getAuthor().getImage());
+        }
+        return dto;
     }
 
     @Override
@@ -91,7 +104,12 @@ public class CommentsServiceImpl implements CommentsService {
         }
 
         comment.setText(newText);
-        return commentMapper.toDto(commentsRepository.save(comment));
+
+        Comment saved = commentMapper.toDto(commentsRepository.save(comment));
+        if (comment.getAuthor() != null && comment.getAuthor().getImage() != null) {
+            saved.setImage(comment.getAuthor().getImage());
+        }
+        return saved;
     }
 
 }

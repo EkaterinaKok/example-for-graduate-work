@@ -22,20 +22,18 @@ import java.net.MalformedURLException;
 @RequiredArgsConstructor
 public class ImageController {
 
-    private final ImageStorageService imageStorageService; // Сервис внедряется автоматически
+    private final ImageStorageService imageStorageService;
 
     @GetMapping("/{filename}")
-    @Operation(summary = "Получение картинки по имени файла")
+    @Operation(summary = "Получение картинки по имени файла (без указания полного пути)")
     @ApiResponse(responseCode = "200", description = "OK")
     @ApiResponse(responseCode = "404", description = "Картинка не найдена")
     public ResponseEntity<Resource> getImage(@PathVariable String filename) throws MalformedURLException {
 
-        // ✅ ВСЁ, ЧТО НУЖНО КОНТРОЛЛЕРУ: попросить ресурс у сервиса
         Resource resource = imageStorageService.getResource(filename);
 
         if (resource != null && resource.exists() && resource.isReadable()) {
 
-            // 🖼️ ОПРЕДЕЛЕНИЕ ТИПА КОНТЕНТА
             String lowerFilename = filename.toLowerCase();
             String contentType;
 
@@ -44,7 +42,6 @@ public class ImageController {
             } else if (lowerFilename.endsWith(".gif")) {
                 contentType = MediaType.IMAGE_GIF_VALUE;
             } else {
-                // По умолчанию считаем JPEG
                 contentType = MediaType.IMAGE_JPEG_VALUE;
             }
 
@@ -54,7 +51,6 @@ public class ImageController {
             return ResponseEntity.ok().headers(headers).body(resource);
         }
 
-        // Если ресурса нет (файл не найден или проверка безопасности не прошла)
         return ResponseEntity.notFound().build();
     }
 }

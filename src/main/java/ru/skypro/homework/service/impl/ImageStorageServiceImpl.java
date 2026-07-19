@@ -41,7 +41,7 @@ public class ImageStorageServiceImpl implements ImageStorageService {
 
         try {
             Files.write(filePath, bytes);
-            return "uploads/images/" + filename;
+            return "/images/" + filename;
         } catch (IOException e) {
             throw new RuntimeException("Ошибка сохранения файла", e);
         }

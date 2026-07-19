@@ -25,5 +25,8 @@ public class Comment {
     @Schema(description = "Дата создания комментария (Unix timestamp, ms)", example = "1715623456789")
     private Long createdAt;
 
+    @Schema(description = "Ссылка на аватарку автора", example = "/images/kosmos.jpeg")
+    private String image;
+
 }
 
