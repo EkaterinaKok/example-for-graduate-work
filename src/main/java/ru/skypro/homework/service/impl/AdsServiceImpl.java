@@ -18,6 +18,7 @@ import ru.skypro.homework.repository.AdsRepository;
 import ru.skypro.homework.repository.UsersRepository;
 import ru.skypro.homework.security.SecurityUtils;
 import ru.skypro.homework.service.AdsService;
+import ru.skypro.homework.service.ImageStorageService;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
@@ -33,7 +34,7 @@ public class AdsServiceImpl implements AdsService {
     private final UsersRepository usersRepository;
     private final AdMapper adMapper;
     private final ExtendedAdMapper extendedAdMapper;
-    private final ImageStorageServiceImpl imageStorageService;
+    private final ImageStorageService imageStorageService;
 
     @Override
     public Ads getAllAds() {

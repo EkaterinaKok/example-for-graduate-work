@@ -22,7 +22,7 @@ public class SecurityConfig {
 
     private static final String[] AUTH_WHITELIST = {
             "/swagger-resources/**", "/swagger-ui.html", "/v3/api-docs", "/webjars/**",
-            "/login", "/register"
+            "/login", "/register", "/images/**"
     };
 
     private final CustomUserDetailsService customUserDetailsService;
@@ -50,7 +50,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/comments/**").permitAll()
 
                         .requestMatchers(HttpMethod.POST, "/ads/**", "/comments/**").hasAnyRole("USER", "ADMIN")
-                        .requestMatchers(HttpMethod.PATCH, "/ads/**", "/comments/**").hasAnyRole("USER", "ADMIN") // У тебя в контроллере PATCH
+                        .requestMatchers(HttpMethod.PATCH, "/ads/**", "/comments/**").hasAnyRole("USER", "ADMIN")
                         .requestMatchers(HttpMethod.DELETE, "/ads/**", "/comments/**").hasAnyRole("USER", "ADMIN")
 
                         .anyRequest().authenticated()

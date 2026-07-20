@@ -15,6 +15,7 @@ import ru.skypro.homework.exception.ImageUploadException;
 import ru.skypro.homework.mapper.UserMapper;
 import ru.skypro.homework.repository.UsersRepository;
 import ru.skypro.homework.security.AuthUtils;
+import ru.skypro.homework.service.ImageStorageService;
 import ru.skypro.homework.service.UsersService;
 
 import java.io.IOException;
@@ -31,7 +32,7 @@ public class UsersServiceImpl implements UsersService {
     private final AuthUtils authUtils;
     private final PasswordEncoder passwordEncoder;
     private final UserMapper userMapper;
-    private final ImageStorageServiceImpl imageStorageService;
+    private final ImageStorageService imageStorageService;
 
     @Override
     public void setPassword(NewPassword dto) {
