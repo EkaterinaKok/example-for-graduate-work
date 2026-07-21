@@ -1,91 +1,63 @@
 package ru.skypro.homework.exception;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
+import jakarta.servlet.http.HttpServletRequest;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
-import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
-import org.springframework.web.server.ResponseStatusException;
+import ru.skypro.homework.dto.ErrorResponseDTO;
 
-import java.time.LocalDateTime;
-import java.util.HashMap;
-import java.util.Map;
-
+@Slf4j
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
-    @Data
-    @AllArgsConstructor
-    static class ErrorResponse {
-        private LocalDateTime timestamp;
-        private String message;
-        private int status;
+    @ExceptionHandler(UserEntityNotFoundException.class)
+    public ResponseEntity<ErrorResponseDTO> handleUserEntityNotFound(UserEntityNotFoundException e, HttpServletRequest request) {
+        log.warn("Пользователь не найден: {}", e.getMessage());
+        return createErrorResponse(HttpStatus.NOT_FOUND, "UserEntity Not Found", e.getMessage(), request.getRequestURI());
     }
 
-    @ExceptionHandler(NotFoundException.class)
-    public ResponseEntity<ErrorResponse> handleNotFoundException(NotFoundException ex) {
-        return new ResponseEntity<>(
-                new ErrorResponse(LocalDateTime.now(), ex.getMessage(), HttpStatus.NOT_FOUND.value()),
-                HttpStatus.NOT_FOUND
-        );
+    @ExceptionHandler(AdEntityNotFoundException.class)
+    public ResponseEntity<ErrorResponseDTO> handleAdEntityNotFound(AdEntityNotFoundException e, HttpServletRequest request) {
+        log.warn("Объявление не найдено: {}", e.getMessage());
+        return createErrorResponse(HttpStatus.NOT_FOUND, "AdEntity Not Found", e.getMessage(), request.getRequestURI());
     }
 
-    @ExceptionHandler(AccessDeniedException.class)
-    public ResponseEntity<ErrorResponse> handleForbidden(AccessDeniedException ex) {
-        String message = (ex instanceof AccessDeniedExceptionCustom)
-                ? ex.getMessage()
-                : "Доступ запрещен";
-
-        return new ResponseEntity<>(
-                new ErrorResponse(LocalDateTime.now(), message, HttpStatus.FORBIDDEN.value()),
-                HttpStatus.FORBIDDEN
-        );
-    }
-
-    @ExceptionHandler(org.springframework.security.core.userdetails.UsernameNotFoundException.class)
-    public ResponseEntity<ErrorResponse> handleUsernameNotFound(org.springframework.security.core.userdetails.UsernameNotFoundException ex) {
-        return new ResponseEntity<>(
-                new ErrorResponse(LocalDateTime.now(), ex.getMessage(), HttpStatus.NOT_FOUND.value()),
-                HttpStatus.NOT_FOUND
-        );
+    @ExceptionHandler(CommentEntityNotFoundException.class)
+    public ResponseEntity<ErrorResponseDTO> handleCommentEntityNotFound(CommentEntityNotFoundException e, HttpServletRequest request) {
+        log.warn("Комментарий не найден: {}", e.getMessage());
+        return createErrorResponse(HttpStatus.NOT_FOUND, "CommentEntity Not Found", e.getMessage(), request.getRequestURI());
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<Map<String, String>> handleValidationExceptions(MethodArgumentNotValidException ex) {
-        Map<String, String> errors = new HashMap<>();
-        ex.getBindingResult().getFieldErrors().forEach(error ->
-                errors.put(error.getField(), error.getDefaultMessage())
-        );
-        return ResponseEntity.badRequest().body(errors);
+    public ResponseEntity<ErrorResponseDTO> handleMethodArgumentNotValid(MethodArgumentNotValidException e, HttpServletRequest request) {
+        FieldError fieldError = e.getBindingResult().getFieldError();
+        String message = fieldError != null
+                ? String.format("Ошибка в поле '%s': %s", fieldError.getField(), fieldError.getDefaultMessage())
+                : "Ошибка валидации";
+        log.warn("Ошибка валидации: {}", message);
+        return createErrorResponse(HttpStatus.BAD_REQUEST, "Bad Request", message, request.getRequestURI());
     }
 
-    @ExceptionHandler(ResponseStatusException.class)
-    public ResponseEntity<ErrorResponse> handleResponseStatusException(ResponseStatusException ex) {
-        HttpStatus status = (HttpStatus) ex.getStatusCode();
-        return new ResponseEntity<>(
-                new ErrorResponse(LocalDateTime.now(), ex.getReason(), status.value()),
-                status
-        );
+    @ExceptionHandler(AccessDeniedException.class)
+    public ResponseEntity<ErrorResponseDTO> handleAccessDeniedException(AccessDeniedException ex, HttpServletRequest request) {
+        log.warn("Доступ запрещен для запроса: URI={}, Message={}", request.getRequestURI(), ex.getMessage(), ex);
+        String message = "У вас недостаточно прав для выполнения этого действия. Вы не являетесь владельцем объявления.";
+        return createErrorResponse(HttpStatus.FORBIDDEN, "Forbidden", message, request.getRequestURI());
     }
 
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<ErrorResponse> handleGenericException(Exception ex) {
-        return new ResponseEntity<>(
-                new ErrorResponse(LocalDateTime.now(), "Внутренняя ошибка сервера", HttpStatus.INTERNAL_SERVER_ERROR.value()),
-                HttpStatus.INTERNAL_SERVER_ERROR
-        );
+    public ResponseEntity<ErrorResponseDTO> handleGenericException(Exception e, HttpServletRequest request) {
+        log.error("Непредвиденная ошибка: {}", e.getMessage(), e);
+        return createErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR, "Internal Server Error", "Произошла непредвиденная ошибка", request.getRequestURI());
     }
 
-    @ExceptionHandler(BadCredentialsException.class)
-    public ResponseEntity<ErrorResponse> handleBadCredentials(BadCredentialsException ex) {
-        return new ResponseEntity<>(
-                new ErrorResponse(LocalDateTime.now(), "Неверный логин или пароль", HttpStatus.UNAUTHORIZED.value()),
-                HttpStatus.UNAUTHORIZED
-        );
+    private ResponseEntity<ErrorResponseDTO> createErrorResponse(HttpStatus status, String error, String message, String path) {
+        ErrorResponseDTO errorResponse = new ErrorResponseDTO(status.value(), error, message, path);
+        return ResponseEntity.status(status).body(errorResponse);
     }
-
 }

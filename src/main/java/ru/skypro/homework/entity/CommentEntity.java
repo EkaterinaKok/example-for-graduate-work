@@ -1,59 +1,45 @@
 package ru.skypro.homework.entity;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.ToString;
 
-import java.util.Objects;
+import java.util.Date;
 
+@ToString
+@EqualsAndHashCode(of = "pk")
 @Setter
 @Getter
-@Entity
-@Table(name = "comments")
-@NoArgsConstructor
-@AllArgsConstructor
+@Entity(name = "comment_entities")
 public class CommentEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer pk;
+    @Column(name = "pk", nullable = false)
+    private int pk;
 
-    @Column(nullable = false, length = 64)
+    @Column(name = "text", nullable = false, length = 64)
     private String text;
 
     @Column(name = "created_at", nullable = false)
-    private Long createdAt; // Храним timestamp в мс (Long)
+    private long createdAt;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "author_id", nullable = false)
+    @ToString.Exclude
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "author", nullable = false)
     private UserEntity author;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "ad_id", nullable = false)
-    private AdEntity ad;
+    @ToString.Exclude
+    @ManyToOne(fetch = FetchType.LAZY, optional = false, cascade = CascadeType.PERSIST)
+    @JoinColumn(name = "ad_entity", nullable = false)
+    private AdEntity adEntity;
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof CommentEntity)) return false;
-        CommentEntity that = (CommentEntity) o;
-        return pk != null && pk.equals(that.pk);
+    @PrePersist
+    protected void onCreate() {
+        if (createdAt == 0) {
+            createdAt = new Date().getTime();
+        }
     }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(pk);
-    }
-
-    @Override
-    public String toString() {
-        return "CommentEntity{" +
-                "pk=" + pk +
-                ", text='" + text + '\'' +
-                ", createdAt=" + createdAt +
-                '}';
-    }
-
 }

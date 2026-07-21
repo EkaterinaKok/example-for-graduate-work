@@ -3,24 +3,18 @@ spring:
     url: jdbc:postgresql://localhost:5432/skypro_ads
     username: username
     password: password
-    driver-class-name: org.postgresql.Driver
-
-  liquibase:
-    change-log: classpath:db/changelog/master.yml
-
   jpa:
     hibernate:
-      ddl-auto: none
-    show-sql: true
-
-  servlet:
-    multipart:
-      enabled: true
-      max-file-size: 10MB
-      max-request-size: 10MB
-
-server:
-  port: 8080
-
-app:
-  upload-dir: uploads/images
+      ddl-auto: validate
+  liquibase:
+    change-log: classpath:liquibase/changelog-master.yml
+    enabled: true
+    url: jdbc:postgresql://localhost:5432/skypro_ads
+    user: username
+    password: password
+path:
+  dir:
+    image: /app/images/
+springdoc:
+  api-docs:
+    enabled: true

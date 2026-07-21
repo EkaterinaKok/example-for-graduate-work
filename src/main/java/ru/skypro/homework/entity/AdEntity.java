@@ -1,68 +1,45 @@
 package ru.skypro.homework.entity;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.ToString;
 
-import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Objects;
 
+@ToString
+@EqualsAndHashCode(of = "pk")
 @Setter
 @Getter
-@Entity
-@Table(name = "ads")
-@NoArgsConstructor
-@AllArgsConstructor
+@Entity(name = "ad_entities")
 public class AdEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer pk;
+    @Column(name = "pk", nullable = false)
+    private int pk;
 
-    @Column(nullable = false, length = 100)
+    @Column(name = "title", nullable = false, length = 32)
     private String title;
 
-    @Column(length = 1000)
+    @Column(name = "description", nullable = false, length = 64)
     private String description;
 
-    @Column(nullable = false)
-    private Integer price;
+    @Column(name = "price", nullable = false)
+    private int price;
 
-    @Column(name = "image_url", length = 500)
+    @Column(name = "image", nullable = false)
     private String image;
 
-    @Column(name = "created_at")
-    private LocalDateTime createdAt;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "author_id", nullable = false)
+    @ToString.Exclude
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "author", nullable = false)
     private UserEntity author;
 
-    @OneToMany(mappedBy = "ad", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private List<CommentEntity> comments;
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof AdEntity adEntity)) return false;
-        return pk != null && pk.equals(adEntity.pk);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(pk);
-    }
-
-    @Override
-    public String toString() {
-        return "AdEntity{" +
-                "pk=" + pk +
-                ", title='" + title + '\'' +
-                ", price=" + price +
-                '}';
-    }
+    @ToString.Exclude
+    @OrderBy("createdAt DESC")
+    @OneToMany(mappedBy = "adEntity", cascade = CascadeType.REMOVE, orphanRemoval = true)
+    private List<CommentEntity> commentEntities;
 
 }

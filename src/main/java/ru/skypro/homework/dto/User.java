@@ -1,34 +1,29 @@
 package ru.skypro.homework.dto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
-import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 
 @Data
-@NoArgsConstructor
-@AllArgsConstructor
 public class User {
 
-    @Schema(description = "Уникальный ID пользователя", example = "101")
-    private Integer id;
+    @Schema(type = "integer", format = "int32", description = "id пользователя")
+    private int id;
 
-    @Schema(description = "Email пользователя", example = "ivan.petrov@example.com")
+    @Schema(type = "string", description = "логин пользователя")
     private String email;
 
-    @Schema(description = "Имя пользователя", example = "Иван")
+    @Schema(type = "string", description = "имя пользователя")
     private String firstName;
 
-    @Schema(description = "Фамилия пользователя", example = "Петров")
+    @Schema(type = "string", description = "фамилия пользователя")
     private String lastName;
 
-    @Schema(description = "Телефон пользователя  формате +7...", example = "+79001112233")
+    @Schema(type = "string", description = "телефон пользователя")
     private String phone;
 
-    @Schema(description = "Роль пользователя", example = "USER")
-    private String role;
+    @Schema(type = "string", description = "роль пользователя")
+    private Role role;
 
-    @Schema(description = "Ссылка на аватар пользователя", example = "https://cdn.example.com/avatars/101.jpg")
+    @Schema(type = "string", description = "ссылка на аватар пользователя")
     private String image;
-
 }

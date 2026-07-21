@@ -1,53 +1,35 @@
 package ru.skypro.homework.dto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
-import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.Size;
-import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 
 @Data
-@NoArgsConstructor
-@AllArgsConstructor
 public class ExtendedAd {
 
-    @Schema(
-            description = "Уникальный ID объявления (генерируется сервером)",
-            example = "505",
-            accessMode = Schema.AccessMode.READ_ONLY
-    )
-    private Integer pk;
+    @Schema(type = "integer", format = "int32", description = "id объявления")
+    private int pk;
 
-    @Schema(description = "Имя автора объявления", example = "Сергей")
-    @Size(min = 2, max = 50, message = "Имя должно быть от 2 до 50 символов")
+    @Schema(type = "string", description = "имя автора объявления")
     private String authorFirstName;
 
-    @Schema(description = "Фамилия автора объявления", example = "Петров")
-    @Size(min = 2, max = 50, message = "Фамилия должна быть от 2 до 50 символов")
+    @Schema(type = "string", description = "фамилия автора объявления")
     private String authorLastName;
 
-    @Schema(description = "Полное описание товара", example = "Продаю велосипед Trek...")
-    @Size(max = 1000, message = "Описание не должно превышать 1000 символов")
+    @Schema(type = "string", description = "описание объявления")
     private String description;
 
-    @Schema(description = "Email продавца для связи", example = "sergey.petrov@mail.ru")
-    @Email(message = "Некорректный формат email")
+    @Schema(type = "string", description = "логин автора объявления")
     private String email;
 
-    @Schema(description = "Относительный путь к изображению (для склейки с базовым URL)", example = "/images/550e8400-e29b-41d4-a716-446655440000.jpg")
+    @Schema(type = "string", description = "ссылка на картинку объявления")
     private String image;
 
-    @Schema(description = "Телефон продавца", example = "+79991234567")
+    @Schema(type = "string", description = "телефон автора объявления")
     private String phone;
 
-    @Schema(description = "Цена товара в рублях", example = "35000")
-    @Min(value = 0, message = "Цена не может быть отрицательной")
-    private Integer price;
+    @Schema(type = "integer", format = "int32", description = "цена объявления")
+    private int price;
 
-    @Schema(description = "Заголовок объявления", example = "Велосипед Trek, новый, рама M")
-    @Size(min = 3, max = 100, message = "Заголовок должен быть от 3 до 100 символов")
+    @Schema(type = "string", description = "заголовок объявления")
     private String title;
-
 }
