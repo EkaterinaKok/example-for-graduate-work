@@ -3,20 +3,18 @@ spring:
     url: jdbc:postgresql://localhost:5432/skypro_ads
     username: username
     password: password
-    driver-class-name: org.postgresql.Driver
-
-  # ВАЖНО: Включаем Liquibase!
-  liquibase:
-    change-log: classpath:db/changelog/master.yml
-    # enabled: true # По умолчанию true, можно не писать явно
-
   jpa:
     hibernate:
-      ddl-auto: none # Обязательно none, иначе Hibernate и Liquibase будут драться за создание таблиц
-    show-sql: true
-    properties:
-      hibernate:
-        dialect: org.hibernate.dialect.PostgreSQLDialect
-
-server:
-  port: 8080
+      ddl-auto: validate
+  liquibase:
+    change-log: classpath:liquibase/changelog-master.yml
+    enabled: true
+    url: jdbc:postgresql://localhost:5432/skypro_ads
+    user: username
+    password: password
+path:
+  dir:
+    image: /app/images/
+springdoc:
+  api-docs:
+    enabled: true

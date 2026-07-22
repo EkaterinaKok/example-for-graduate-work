@@ -1,25 +1,22 @@
 package ru.skypro.homework.dto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
-import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.Size;
-import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 
 @Data
-@NoArgsConstructor
-@AllArgsConstructor
 public class Login {
 
-    @NotNull(message = "Логин обязателен")
-    @Size(min = 4, max = 32, message = "Логин должен быть от 4 до 32 символов")
-    @Schema(description = "Логин пользователя для входа", example = "user_ivan")
+    @Schema(type = "string", description = "логин", minLength = 4, maxLength = 32)
+    @NotEmpty(message = "Логин не может быть пустым или не указанным")
+    @Email(message = "Логин должен быть формата электронной почты: example@mail.ru")
+    @Size(min = 4, max = 32, message = "Логин не может быть меньше 4 и больше 32")
     private String username;
 
-    @NotNull(message = "Пароль обязателен")
-    @Size(min = 8, max = 16, message = "Пароль должен быть от 8 до 16 символов")
-    @Schema(description = "Пароль пользователя", example = "strongPass12")
+    @Schema(type = "string", description = "пароль", minLength = 8, maxLength = 16)
+    @NotEmpty(message = "Пароль не может быть пустым или не указанным")
+    @Size(min = 8, max = 16, message = "Пароль не может быть меньше 8 и больше 16")
     private String password;
-
 }

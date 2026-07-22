@@ -1,27 +1,23 @@
 package ru.skypro.homework.dto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
-import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 
 @Data
-@NoArgsConstructor
-@AllArgsConstructor
 public class Ad {
 
-    @Schema(description = "Уникальный идентификатор автора", example = "100", accessMode = Schema.AccessMode.READ_ONLY)
-    private Integer authorId;
+    @Schema(type = "integer", format = "int32", description = "id автора объявления")
+    private int author;
 
-    @Schema(description = "Ссылка на изображение объявления", example = "https://site.com/img/1.jpg")
+    @Schema(type = "string", description = "ссылка на картинку объявления")
     private String image;
 
-    @Schema(description = "Уникальный идентификатор объявления", example = "55", accessMode = Schema.AccessMode.READ_ONLY)
-    private Integer pk;
+    @Schema(type = "integer", format = "int32", description = "id объявления")
+    private int pk;
 
-    @Schema(description = "Цена объявления в рублях", example = "15000", minimum = "0")
-    private Integer price;
+    @Schema(type = "integer", format = "int32", description = "цена объявления")
+    private int price;
 
-    @Schema(description = "Заголовок объявления", example = "Продам велосипед", maxLength = 100, minLength = 3)
+    @Schema(type = "string", description = "заголовок объявления")
     private String title;
 }

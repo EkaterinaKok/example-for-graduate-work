@@ -1,74 +1,46 @@
 package ru.skypro.homework.entity;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.ToString;
 
 import java.util.List;
-import java.util.Objects;
 
+@ToString
+@EqualsAndHashCode(of = "id")
 @Setter
 @Getter
-@Entity
-@Table(name = "users")
-@NoArgsConstructor
-@AllArgsConstructor
+@Entity(name = "user_entities")
 public class UserEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id;
+    private int id;
 
-    @Column(nullable = false, unique = true, length = 32)
+    @Column(name = "username", unique = true, length = 32)
     private String username;
 
-    private String email;
+    @Column(name = "password", nullable = false)
+    private String password;
 
-    @Column(name = "first_name", nullable = false, length = 50)
+    @Column(name = "first_name", nullable = false, length = 16)
     private String firstName;
 
-    @Column(name = "last_name", nullable = false, length = 50)
+    @Column(name = "last_name", nullable = false, length = 16)
     private String lastName;
 
+    @Column(name = "phone", nullable = false, length = 16)
     private String phone;
 
-    @Column(length = 20)
-    private String role = "USER";
+    @Column(name = "authority", nullable = false, length = 10)
+    private String authority;
 
-    @Column(name = "password_hash", nullable = false)
-    private String passwordHash;
-
-    @Column(name = "image_url", length = 500)
+    @Column(name = "image")
     private String image;
 
-    @OneToMany(mappedBy = "author", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private List<AdEntity> ads;
-
-    @OneToMany(mappedBy = "author", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private List<CommentEntity> comments;
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof UserEntity userEntity)) return false;
-        return id != null && id.equals(userEntity.id);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(id);
-    }
-
-    @Override
-    public String toString() {
-        return "UserEntity{" +
-                "id=" + id +
-                ", username='" + username + '\'' +
-                ", firstName='" + firstName + '\'' +
-                ", lastName='" + lastName + '\'' +
-                '}';
-    }
-
+    @ToString.Exclude
+    @OneToMany(mappedBy = "author")
+    private List<AdEntity> adEntities;
 }

@@ -1,25 +1,20 @@
 package ru.skypro.homework.dto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
+import lombok.Data;
 
 @Data
-@NoArgsConstructor
-@AllArgsConstructor
 public class NewPassword {
 
-    @NotNull
-    @Size(min = 8, max = 16)
-    @Schema(description = "Текущий пароль пользователя", example = "oldPass123")
+    @Schema(type = "string", description = "текущий пароль", minLength = 8, maxLength = 16)
+    @NotBlank(message = "Текущий пароль не может быть пустым или не указанным")
+    @Size(min = 8, max = 16, message = "Текущий пароль не может быть меньше 8 или больше 16")
     private String currentPassword;
 
-    @NotNull
-    @Size(min = 8, max = 16)
-    @Schema(description = "Новый пароль пользователя", example = "newPass456")
+    @Schema(type = "string", description = "новый пароль", minLength = 8, maxLength = 16)
+    @NotBlank(message = "Новый пароль не может быть пустым или не указанным")
+    @Size(min = 8, max = 16, message = "Новый пароль не может быть меньше 8 или больше 16")
     private String newPassword;
-
 }

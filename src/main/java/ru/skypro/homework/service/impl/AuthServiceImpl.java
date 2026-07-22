@@ -3,41 +3,42 @@ package ru.skypro.homework.service.impl;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import ru.skypro.homework.dto.Register;
 import ru.skypro.homework.entity.UserEntity;
-import ru.skypro.homework.repository.UsersRepository;
+import ru.skypro.homework.mapper.UserEntityMapper;
+import ru.skypro.homework.repository.UserEntityRepository;
 import ru.skypro.homework.service.AuthService;
 
 @Service
 @RequiredArgsConstructor
 public class AuthServiceImpl implements AuthService {
 
-    private final UsersRepository usersRepository;
+    private final UserEntityRepository userEntityRepository;
+
     private final PasswordEncoder passwordEncoder;
 
+    private final UserEntityMapper userEntityMapper;
+
+    @Transactional(readOnly = true)
     @Override
-    public boolean login(String username, String password) {
-        return usersRepository.findByUsername(username)
-                .filter(user -> passwordEncoder.matches(password, user.getPasswordHash()))
-                .isPresent();
+    public boolean login(String userName, String password) {
+        return userEntityRepository.findByUsername(userName)
+                .map(user -> passwordEncoder.matches(password, user.getPassword()))
+                .orElse(false);
     }
 
+    @Transactional
     @Override
     public boolean register(Register register) {
-        if (usersRepository.findByUsername(register.getUsername()).isPresent()) {
+        if (userEntityRepository.findByUsername(register.getUsername()).isPresent()) {
             return false;
         }
 
-        UserEntity user = new UserEntity();
-        user.setUsername(register.getUsername());
-        user.setFirstName(register.getFirstName());
-        user.setLastName(register.getLastName());
-        user.setPhone(register.getPhone());
-        user.setRole(register.getRole() != null ? register.getRole().name() : "USER");
+        UserEntity userEntity = userEntityMapper.registerUser(register);
+        userEntity.setPassword(passwordEncoder.encode(register.getPassword()));
+        userEntityRepository.save(userEntity);
 
-        user.setPasswordHash(passwordEncoder.encode(register.getPassword()));
-
-        usersRepository.save(user);
         return true;
     }
 
