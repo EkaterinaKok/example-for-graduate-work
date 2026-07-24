@@ -15,14 +15,27 @@ import ru.skypro.homework.dto.Comments;
 import ru.skypro.homework.dto.CreateOrUpdateComment;
 import ru.skypro.homework.service.CommentEntityService;
 
+/**
+ * Контроллер для управления комментариями к объявлениям.
+ * Предоставляет REST-эндпоинты для получения, создания, обновления и удаления комментариев.
+ */
 @Tag(name = "Комментарии")
 @RequestMapping("/ads")
 @RequiredArgsConstructor
 @RestController
 public class CommentController {
 
+    /**
+     * Сервис, реализующий бизнес-логику работы с комментариями.
+     */
     private final CommentEntityService commentEntityService;
 
+    /**
+     * Получает список всех комментариев для указанного объявления.
+     *
+     * @param id идентификатор объявления, к которому запрашиваются комментарии
+     * @return объект {@link Comments}, содержащий коллекцию комментариев
+     */
     @Operation(summary = "Получение комментариев объявления", operationId = "getComments")
     @ApiResponse(responseCode = "200", description = "OK", content = @Content(schema = @Schema(implementation = Comments.class)))
     @ApiResponse(responseCode = "401", description = "Unauthorized")
@@ -32,6 +45,15 @@ public class CommentController {
         return commentEntityService.getComments(id);
     }
 
+    /**
+     * Добавляет новый комментарий к указанному объявлению.
+     * Требует аутентификации пользователя.
+     *
+     * @param id идентификатор объявления, к которому добавляется комментарий
+     * @param createComment данные для создания комментария ({@link CreateOrUpdateComment})
+     * @param authentication объект аутентификации текущего пользователя
+     * @return созданный комментарий в формате {@link Comment}
+     */
     @Operation(summary = "Добавление комментария к объявлению", operationId = "addComment")
     @ApiResponse(responseCode = "200", description = "OK", content = @Content(schema = @Schema(implementation = Comment.class)))
     @ApiResponse(responseCode = "401", description = "Unauthorized")
@@ -42,6 +64,14 @@ public class CommentController {
         return commentEntityService.addComment(id, createComment, authentication);
     }
 
+    /**
+     * Удаляет комментарий.
+     * Доступ разрешен только владельцу комментария или пользователю с ролью ADMIN.
+     *
+     * @param adId идентификатор объявления, которому принадлежит комментарий
+     * @param commentId идентификатор удаляемого комментария
+     * @param authentication объект аутентификации текущего пользователя
+     */
     @Operation(summary = "Удаление комментария", operationId = "deleteComment")
     @ApiResponse(responseCode = "200", description = "OK")
     @ApiResponse(responseCode = "401", description = "Unauthorized")
@@ -53,6 +83,16 @@ public class CommentController {
         commentEntityService.deleteComment(adId, commentId);
     }
 
+    /**
+     * Обновляет существующий комментарий.
+     * Доступ разрешен только владельцу комментария или пользователю с ролью ADMIN.
+     *
+     * @param adId идентификатор объявления, которому принадлежит комментарий
+     * @param commentId идентификатор обновляемого комментария
+     * @param updateComment данные для обновления комментария ({@link CreateOrUpdateComment})
+     * @param authentication объект аутентификации текущего пользователя
+     * @return обновленный комментарий в формате {@link Comment}
+     */
     @Operation(summary = "Обновление комментария", operationId = "updateComment")
     @ApiResponse(responseCode = "200", description = "OK", content = @Content(schema = @Schema(implementation = Comment.class)))
     @ApiResponse(responseCode = "401", description = "Unauthorized")
