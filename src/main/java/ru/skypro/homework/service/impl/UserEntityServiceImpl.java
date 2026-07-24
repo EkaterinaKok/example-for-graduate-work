@@ -19,18 +19,47 @@ import ru.skypro.homework.service.UserEntityService;
 
 import java.io.IOException;
 
+/**
+ * Реализация сервиса для управления данными пользователей.
+ * Предоставляет функционал для смены пароля, получения профиля, обновления личных данных
+ * и загрузки аватара пользователя.
+ */
 @Service
 @RequiredArgsConstructor
 public class UserEntityServiceImpl implements UserEntityService {
 
+    /**
+     * Репозиторий для доступа к данным пользователей в базе данных.
+     */
     private final UserEntityRepository userEntityRepository;
 
+    /**
+     * Компонент для хеширования паролей и проверки их соответствия.
+     * Гарантирует безопасное хранение паролей в зашифрованном виде.
+     */
     private final PasswordEncoder passwordEncoder;
 
+    /**
+     * Маппер для преобразования сущностей пользователей ({@link UserEntity}) в DTO и обратно.
+     */
     private final UserEntityMapper userEntityMapper;
 
+    /**
+     * Сервис для работы с файлами изображений.
+     * Используется для сохранения и удаления аватаров пользователей.
+     */
     private final ImageService imageService;
 
+    /**
+     * Изменяет пароль пользователя после проверки текущего пароля.
+     * Сравнивает переданный текущий пароль с хешированным значением в БД,
+     * хеширует новый пароль и сохраняет обновленную сущность.
+     *
+     * @param newPassword     данные для смены пароля из DTO {@link NewPassword}
+     * @param authentication  объект аутентификации для идентификации пользователя
+     * @throws AccessDeniedException      если текущий пароль неверен
+     * @throws UserEntityNotFoundException если пользователь не найден в базе данных
+     */
     @Transactional
     @Override
     public void setPassword(NewPassword newPassword, Authentication authentication) {
@@ -44,6 +73,14 @@ public class UserEntityServiceImpl implements UserEntityService {
         userEntityRepository.save(userEntity);
     }
 
+    /**
+     * Получает данные профиля текущего авторизованного пользователя.
+     * Преобразует сущность пользователя в DTO-представление.
+     *
+     * @param authentication объект аутентификации для идентификации пользователя
+     * @return DTO профиля пользователя {@link User}
+     * @throws UserEntityNotFoundException если пользователь не найден в базе данных
+     */
     @Transactional(readOnly = true)
     @Override
     public User getUser(Authentication authentication) {
@@ -52,6 +89,15 @@ public class UserEntityServiceImpl implements UserEntityService {
         return userEntityMapper.toDTO(userEntity);
     }
 
+    /**
+     * Обновляет личные данные пользователя (имя, фамилия, телефон и т.д.).
+     * Применяет изменения к сущности пользователя с помощью маппера и сохраняет обновленные данные в БД.
+     *
+     * @param updateUser     новые данные пользователя для обновления из DTO {@link UpdateUser}
+     * @param authentication объект аутентификации для идентификации пользователя
+     * @return DTO с переданными данными обновления {@link UpdateUser}
+     * @throws UserEntityNotFoundException если пользователь не найден в базе данных
+     */
     @Transactional
     @Override
     public UpdateUser updateUser(UpdateUser updateUser, Authentication authentication) {
@@ -63,6 +109,16 @@ public class UserEntityServiceImpl implements UserEntityService {
         return updateUser;
     }
 
+    /**
+     * Обновляет аватар пользователя.
+     * Сохраняет новое изображение, обновляет ссылку в сущности пользователя,
+     * а старое изображение удаляет асинхронно через отдельный поток с небольшой задержкой.
+     *
+     * @param image          новый файл изображения аватара в формате {@link MultipartFile}
+     * @param authentication объект аутентификации для идентификации пользователя
+     * @throws IOException            если произошла ошибка при работе с файлами изображений
+     * @throws UserEntityNotFoundException если пользователь не найден в базе данных
+     */
     @Transactional
     @Override
     public void updateUserImage(MultipartFile image, Authentication authentication) throws IOException {
@@ -73,6 +129,7 @@ public class UserEntityServiceImpl implements UserEntityService {
         userEntity.setImage(imagePath);
         userEntityRepository.save(userEntity);
 
+        // Асинхронное удаление старого изображения с задержкой 800 мс
         if (userEntityImage != null) {
             new Thread(() -> {
                 try {

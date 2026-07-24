@@ -22,18 +22,45 @@ import ru.skypro.homework.service.CommentEntityService;
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * Реализация сервиса для управления комментариями к объявлениям.
+ * Предоставляет функционал для получения списка комментариев, добавления, обновления и удаления комментариев,
+ * а также проверки прав владельца комментария.
+ */
 @RequiredArgsConstructor
 @Service
 public class CommentEntityServiceImpl implements CommentEntityService {
 
+    /**
+     * Репозиторий для доступа к данным комментариев в базе данных.
+     */
     private final CommentEntityRepository commentEntityRepository;
 
+    /**
+     * Маппер для преобразования сущностей комментариев ({@link CommentEntity}) в DTO и обратно.
+     */
     private final CommentEntityMapper commentEntityMapper;
 
+    /**
+     * Репозиторий для доступа к данным объявлений в базе данных.
+     * Используется для проверки существования объявления перед операциями с комментариями.
+     */
     private final AdEntityRepository adEntityRepository;
 
+    /**
+     * Репозиторий для доступа к данным пользователей в базе данных.
+     * Используется для определения автора комментария по данным аутентификации.
+     */
     private final UserEntityRepository userEntityRepository;
 
+    /**
+     * Получает список всех комментариев для указанного объявления.
+     * Формирует ответ {@link Comments}, содержащий список комментариев и их общее количество.
+     *
+     * @param id идентификатор объявления
+     * @return объект {@link Comments} со списком комментариев к объявлению и их количеством
+     * @throws AdEntityNotFoundException если объявление с указанным ID не найдено
+     */
     @Transactional(readOnly = true)
     @Override
     public Comments getComments(int id) {
@@ -46,6 +73,18 @@ public class CommentEntityServiceImpl implements CommentEntityService {
         return comments;
     }
 
+    /**
+     * Добавляет новый комментарий к указанному объявлению.
+     * Определяет автора комментария по объекту аутентификации, создает сущность комментария с помощью маппера,
+     * добавляет её в коллекцию комментариев объявления и сохраняет в БД.
+     *
+     * @param id             идентификатор объявления, к которому добавляется комментарий
+     * @param createComment  данные для создания комментария из DTO {@link CreateOrUpdateComment}
+     * @param authentication объект аутентификации для идентификации автора комментария
+     * @return DTO созданного комментария {@link Comment}
+     * @throws AdEntityNotFoundException    если объявление не найдено
+     * @throws UserEntityNotFoundException  если пользователь (автор комментария) не найден
+     */
     @Transactional
     @Override
     public Comment addComment(int id, CreateOrUpdateComment createComment, Authentication authentication) {
@@ -60,6 +99,14 @@ public class CommentEntityServiceImpl implements CommentEntityService {
         return commentEntityMapper.toDto(savedCommentEntity);
     }
 
+    /**
+     * Удаляет комментарий, принадлежащий указанному объявлению.
+     * Использует кастомный метод репозитория для поиска комментария по комбинации ID объявления и ID комментария.
+     *
+     * @param adId       идентификатор объявления
+     * @param commentId  идентификатор удаляемого комментария
+     * @throws CommentEntityNotFoundException если комментарий не найден
+     */
     @Transactional
     @Override
     public void deleteComment(int adId, int commentId) {
@@ -68,6 +115,16 @@ public class CommentEntityServiceImpl implements CommentEntityService {
         commentEntityRepository.delete(commentEntity);
     }
 
+    /**
+     * Обновляет текст существующего комментария.
+     * Находит комментарий по комбинации ID объявления и ID комментария, изменяет поле текста и сохраняет изменения в БД.
+     *
+     * @param adId         идентификатор объявления
+     * @param commentId    идентификатор обновляемого комментария
+     * @param updateComment новые данные для обновления комментария из DTO {@link CreateOrUpdateComment}
+     * @return обновленное DTO комментария {@link Comment}
+     * @throws CommentEntityNotFoundException если комментарий не найден
+     */
     @Transactional
     @Override
     public Comment updateComment(int adId, int commentId, CreateOrUpdateComment updateComment) {
@@ -79,6 +136,17 @@ public class CommentEntityServiceImpl implements CommentEntityService {
         return commentEntityMapper.toDto(commentEntity);
     }
 
+    /**
+     * Проверяет, является ли указанный пользователь автором конкретного комментария к объявлению.
+     * <p>
+     * Примечание: в текущей реализации при отсутствии комментария метод возвращает {@code true}.
+     * Это может быть потенциальной логической ошибкой и требует дополнительного анализа требований.
+     *
+     * @param username   имя пользователя (логин) для проверки
+     * @param adId       идентификатор объявления
+     * @param commentId  идентификатор комментария
+     * @return {@code true}, если пользователь является автором комментария, иначе {@code false}
+     */
     @Transactional(readOnly = true)
     @Override
     public boolean isOwner(String username, int adId, int commentId) {

@@ -16,14 +16,28 @@ import ru.skypro.homework.dto.Login;
 import ru.skypro.homework.dto.Register;
 import ru.skypro.homework.service.AuthService;
 
+/**
+ * Контроллер для обработки операций авторизации и регистрации пользователей.
+ * Предоставляет эндпоинты для входа в систему и создания новых учетных записей.
+ */
 @Slf4j
 @CrossOrigin(value = "http://localhost:3000")
 @RestController
 @RequiredArgsConstructor
 public class AuthController {
 
+    /**
+     * Сервис, реализующий бизнес-логику авторизации и регистрации.
+     */
     private final AuthService authService;
 
+    /**
+     * Выполняет авторизацию пользователя.
+     * Проверяет учетные данные и возвращает соответствующий HTTP-статус.
+     *
+     * @param login данные для авторизации ({@link Login})
+     * @return {@link ResponseEntity} со статусом 200 при успешной авторизации, 401 — при ошибке
+     */
     @Tag(name = "Авторизация")
     @Operation(summary = "Авторизация пользователя", operationId = "login")
     @ApiResponse(responseCode = "200", description = "OK")
@@ -37,6 +51,13 @@ public class AuthController {
         }
     }
 
+    /**
+     * Регистрирует нового пользователя в системе.
+     * Создает учетную запись на основе переданных данных.
+     *
+     * @param register данные для регистрации нового пользователя ({@link Register})
+     * @return {@link ResponseEntity} со статусом 201 при успешной регистрации, 400 — при ошибке
+     */
     @Tag(name = "Регистрация")
     @Operation(summary = "Регистрация пользователя", operationId = "register")
     @ApiResponse(responseCode = "201", description = "Created")
