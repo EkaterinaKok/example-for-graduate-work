@@ -101,6 +101,7 @@ public class WebSecurityConfig {
                 .authorizeHttpRequests(auth ->
                         auth
                                 .requestMatchers(HttpMethod.GET, "/ads").permitAll()
+                                .requestMatchers(HttpMethod.GET, "/ads/**").permitAll()
                                 .requestMatchers(HttpMethod.GET, "/images/**").permitAll()
                                 .requestMatchers(AUTH_WHITELIST).permitAll()
                                 .anyRequest().authenticated())

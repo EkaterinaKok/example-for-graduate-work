@@ -35,6 +35,9 @@ public interface AdEntityMapper {
      * @return DTO-представление объявления
      */
     @Mapping(source = "author.id", target = "author")
+    @Mapping(target = "title", source = "title")
+    @Mapping(target = "price", source = "price")
+    @Mapping(target = "image", source = "image")
     Ad toDto(AdEntity entity);
 
     /**
