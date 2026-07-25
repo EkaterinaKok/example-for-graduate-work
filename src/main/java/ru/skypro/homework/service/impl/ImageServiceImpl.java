@@ -49,14 +49,14 @@ public class ImageServiceImpl implements ImageService {
     @Override
     public String saveImage(MultipartFile multipartFile) throws IOException {
         File directory = new File(IMAGE_DIRECTORY + imagePath);
-        log.info("Папка с изображениями находится по пути: {}", directory);
+        log.info("Image directory path: {}", directory);
         if (!directory.exists()) {
             directory.mkdirs();
         }
 
         String fileName = UUID.randomUUID() + "_" + multipartFile.getOriginalFilename();
         File dest = new File(directory, fileName);
-        log.info("Файл будет создан по этому пути: {}", dest);
+        log.info("File will be created at: {}", dest);
 
         multipartFile.transferTo(dest);
 

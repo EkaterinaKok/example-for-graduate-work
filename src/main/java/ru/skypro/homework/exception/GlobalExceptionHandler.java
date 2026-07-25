@@ -27,7 +27,7 @@ public class GlobalExceptionHandler {
      */
     @ExceptionHandler(UserEntityNotFoundException.class)
     public ResponseEntity<ErrorResponseDTO> handleUserEntityNotFound(UserEntityNotFoundException e, HttpServletRequest request) {
-        log.warn("Пользователь не найден: {}", e.getMessage());
+        log.warn("User not found: {}", e.getMessage());
         return createErrorResponse(HttpStatus.NOT_FOUND, "UserEntity Not Found", e.getMessage(), request.getRequestURI());
     }
 
@@ -37,7 +37,7 @@ public class GlobalExceptionHandler {
      */
     @ExceptionHandler(AdEntityNotFoundException.class)
     public ResponseEntity<ErrorResponseDTO> handleAdEntityNotFound(AdEntityNotFoundException e, HttpServletRequest request) {
-        log.warn("Объявление не найдено: {}", e.getMessage());
+        log.warn("Ad not found: {}", e.getMessage());
         return createErrorResponse(HttpStatus.NOT_FOUND, "AdEntity Not Found", e.getMessage(), request.getRequestURI());
     }
 
@@ -47,7 +47,7 @@ public class GlobalExceptionHandler {
      */
     @ExceptionHandler(CommentEntityNotFoundException.class)
     public ResponseEntity<ErrorResponseDTO> handleCommentEntityNotFound(CommentEntityNotFoundException e, HttpServletRequest request) {
-        log.warn("Комментарий не найден: {}", e.getMessage());
+        log.warn("Comment not found: {}", e.getMessage());
         return createErrorResponse(HttpStatus.NOT_FOUND, "CommentEntity Not Found", e.getMessage(), request.getRequestURI());
     }
 
@@ -59,9 +59,9 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorResponseDTO> handleMethodArgumentNotValid(MethodArgumentNotValidException e, HttpServletRequest request) {
         FieldError fieldError = e.getBindingResult().getFieldError();
         String message = fieldError != null
-                ? String.format("Ошибка в поле '%s': %s", fieldError.getField(), fieldError.getDefaultMessage())
-                : "Ошибка валидации";
-        log.warn("Ошибка валидации: {}", message);
+                ? String.format("Field error '%s': %s", fieldError.getField(), fieldError.getDefaultMessage())
+                : "Validation error";
+        log.warn("Validation error: {}", message);
         return createErrorResponse(HttpStatus.BAD_REQUEST, "Bad Request", message, request.getRequestURI());
     }
 
@@ -72,8 +72,8 @@ public class GlobalExceptionHandler {
      */
     @ExceptionHandler(AccessDeniedException.class)
     public ResponseEntity<ErrorResponseDTO> handleAccessDeniedException(AccessDeniedException ex, HttpServletRequest request) {
-        log.warn("Доступ запрещен для запроса: URI={}, Message={}", request.getRequestURI(), ex.getMessage(), ex);
-        String message = "У вас недостаточно прав для выполнения этого действия. Вы не являетесь владельцем объявления.";
+        log.warn("Access denied for request: URI={}, Message={}", request.getRequestURI(), ex.getMessage(), ex);
+        String message = "You do not have sufficient rights to perform this action. You are not the owner of the ad.";
         return createErrorResponse(HttpStatus.FORBIDDEN, "Forbidden", message, request.getRequestURI());
     }
 
@@ -84,8 +84,8 @@ public class GlobalExceptionHandler {
      */
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponseDTO> handleGenericException(Exception e, HttpServletRequest request) {
-        log.error("Непредвиденная ошибка: {}", e.getMessage(), e);
-        return createErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR, "Internal Server Error", "Произошла непредвиденная ошибка", request.getRequestURI());
+        log.error("Unexpected error: {}", e.getMessage(), e);
+        return createErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR, "Internal Server Error", "An unexpected error occurred", request.getRequestURI());
     }
 
     /**
